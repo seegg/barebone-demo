@@ -56,11 +56,13 @@ type ExtractStoreName<Name extends string, State> = {
   [key in Name]: State;
 }
 
-type State<S> = {value: S}; 
+type StateSelector<State> = (state: State) => unknown;
+
+interface State<S> {value: S}; 
 
 type CreateStoreResults<S, N extends string, A extends Actions<S>> = ExtractStoreName<N, S> & ActionsWithoutState<A>
 
-export const createStore = <S, Name extends string, A extends Actions<S>>(options: StoreOptions<S, Name, A>): CreateStoreResults<S, Name, A>=> {
+export const createStore = <S, Name extends string, A extends Actions<S>>(options: StoreOptions<S, Name, A>)=> {
   const state: State<S> = {value: options.initialState};
   const actions = constructActions(options.actions, state.value);
   const stateListeners = new Map();
@@ -73,17 +75,20 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(option
   
   console.log(useStore);
 
-  return result;
+  return useStore;
 };
 
+/**
+ * Create a custom hook that returns the store state.
+ */
 export const createStoreHook = <S>(state: S, stateListeners: Map<unknown, unknown>)=>{
-  const useStore = ()=>{
+  const useStore = <T extends (state: S) => unknown>(select: T): ReturnType<T> =>{
     const [storeState, setStoreState] = useState<S>(state);
     if(!stateListeners.has(setStoreState)){
       stateListeners.set(setStoreState, setStoreState);
     }
-    return {storeState};
-  }
+    return select(storeState) as ReturnType<T>;
+  } 
   return useStore;
 }
 
@@ -106,3 +111,9 @@ export const dd = createStore({
     add: (state, to: number)=> state + to
   }
 });
+
+function takesCallback<S,T extends (state: S) => unknown>(state:S,callback: T): ReturnType<T> {
+  return callback(state) as ReturnType<T>;
+}
+
+const rs = dd(state => state);
