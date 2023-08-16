@@ -1,4 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
+import {useState} from 'react';
 
 interface StoreOptions<State = any, Name extends string = string, A extends Actions<State> = any> {
   /**
@@ -6,7 +7,7 @@ interface StoreOptions<State = any, Name extends string = string, A extends Acti
    * a property after the createStore call that can be use
    * to access the state.
    */
-  name: Name extends 'state'? never: Name;
+  name: Name extends 'state' | 'actions' ? never: Name;
   /** The initial state of the store. */
   initialState: State;
   /**
@@ -59,13 +60,35 @@ type State<S> = {value: S};
 
 type CreateStoreResults<S, N extends string, A extends Actions<S>> = ExtractStoreName<N, S> & ActionsWithoutState<A>
 
-export const c3 = <S, Name extends string, A extends Actions<S>>(options: StoreOptions<S, Name, A>): CreateStoreResults<S, Name, A>=> {
+export const createStore = <S, Name extends string, A extends Actions<S>>(options: StoreOptions<S, Name, A>): CreateStoreResults<S, Name, A>=> {
   const state: State<S> = {value: options.initialState};
-  console.log(state);
-  return {} as CreateStoreResults<S, Name, A>;
+  const actions = constructActions(options.actions, state.value);
+  const stateListeners = new Map();
+  const result = {
+    [options.name]: state.value,
+    actions
+  }as CreateStoreResults<S, Name, A>;
+
+  const useStore = createStoreHook(state.value, stateListeners);
+  
+  console.log(useStore);
+
+  return result;
 };
 
+export const createStoreHook = <S>(state: S, stateListeners: Map<unknown, unknown>)=>{
+  const useStore = ()=>{
+    const [storeState, setStoreState] = useState<S>(state);
+    if(!stateListeners.has(setStoreState)){
+      stateListeners.set(setStoreState, setStoreState);
+    }
+    return {storeState};
+  }
+  return useStore;
+}
+
 export const constructActions = <State, A extends Actions<State>>(actions: A, state: State):ActionsWithoutState<A> =>{
+  console.log(actions);
   const result = {actions: {}} as ActionsWithoutState<A>;
   for(const key in actions){
     result.actions[key] = (payload?: unknown) => {
@@ -75,7 +98,7 @@ export const constructActions = <State, A extends Actions<State>>(actions: A, st
   return result;
 };
 
-export const dd = c3({
+export const dd = createStore({
   name: 'dob', 
   initialState: 4, 
   actions: {
@@ -83,5 +106,3 @@ export const dd = c3({
     add: (state, to: number)=> state + to
   }
 });
-
-dd.actions
