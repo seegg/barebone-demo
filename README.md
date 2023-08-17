@@ -32,8 +32,9 @@ export const [useCounterStore, useCounterActions] = createStore({
   },
 });
 
-//addMultiple becomes
+// The signature of addMultiple becomes
 (one: number, two: number) ...
+// when imported from the store.
 ```
 
 Import and use the hooks as normal. Both hooks uses a function
