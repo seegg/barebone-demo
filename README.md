@@ -14,8 +14,9 @@ export const [useCounterStore, useCounterActions] = createStore({
     setCounterTo: (state, value: number) => ({...state, count: value}),
   },
 });
+```
 
-
+```ts
 //Import and use the hooks.
 import {useCounterStore, useCounterActions} from '...'
 
