@@ -8,3 +8,13 @@ export const [useCounterStore, useCounterActions] = createStore({
     reset: () => 0,
   },
 });
+
+
+export const [useTitleStore, useTitleActions] = createStore({
+  name: 'Title',
+  initialState: { value: 'Counter' },
+  actions: {
+    /** Update the title. */
+    updateTitle: (state, value: string)=> ({...state, value})
+  }
+})

@@ -1,5 +1,5 @@
 import './App.css'
-import {useCounterStore, useCounterActions} from './store'
+import {useCounterStore, useCounterActions, useTitleStore, useTitleActions} from './store'
 
 
 function App() {
@@ -10,11 +10,13 @@ function App() {
         <button onClick={reset}>
           Reset
         </button>
+        <p>Click the button the increment the counters.</p>
+        <p>Use the input to the change the card titles.</p>
       </div>
       <div className='counter-container'>
         <InnerCounter count={1}/>
         <InnerCounter count={2}/>
-        <InnerCounter count={3}/>
+        <TitleController count={3}/>
       </div>
     </>
   )
@@ -23,15 +25,16 @@ function App() {
 export default App
 
 interface Counter {
-  count: number;
+  count?: number;
 }
 
 const InnerCounter = ({count}: Counter)=>{
-  const counter = useCounterStore(state => {return state.counter}, (state)=> state.counter % 3 == 0);
+  const counter = useCounterStore(state => state.counter);
   const increment = useCounterActions(actions => actions.increment);
+  const title = useTitleStore(state => state.Title.value);
   return (
     <div>
-      <h1>Counter #{count}</h1>
+      <h1 className='card-title'>{title} {count && '#'+count}</h1>
       <div className="card">
         <button onClick={increment}>
           count is {counter}
@@ -40,3 +43,30 @@ const InnerCounter = ({count}: Counter)=>{
     </div>
   )
 }
+
+const TitleController = ({count}: Counter)=>{
+  const counter = useCounterStore(
+    state => {return state.counter}, 
+    state => state.counter % 3 == 0
+  );
+  const title = useTitleStore(state => state.Title.value);
+  const titleActions = useTitleActions(actions => actions);
+
+  const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>)=>{
+    titleActions.updateTitle(ev.target.value);
+  }
+
+  return (
+    <div>
+      <h1 className='card-title'>{title} {count && '#'+count}</h1>
+      <div className="card">
+        <button>
+          count is {counter}
+        </button>
+        <p>Only increment counter for multiples of 3.</p>
+        <input type='text' value={title} onChange={handleOnChange}/>
+      </div>
+    </div>
+  )
+}
+

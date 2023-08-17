@@ -38,8 +38,12 @@
 
 .card {
   margin: 2em;
-  padding: 2em;
-  width: 12em;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-radius: 5px;
+  width: 15em;
+  height: 12rem;
+  background-color: darkslateblue;
 }
 
 .read-the-docs {
@@ -55,4 +59,8 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.card-title {
+  word-wrap: break-word;
 }
