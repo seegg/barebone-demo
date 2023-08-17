@@ -64,7 +64,39 @@ export type State<Name extends string = string, S = any> = {[key in Name]: S};
 export type CreateStoreResults<S, N extends string, A extends Actions<S>> = ExtractStoreName<N, S> & ActionsWithoutState<A>
 
 /**
- * Creates a store that keeps track of a user defined state.
+ * Create a store with a given state outside of a functional component
+ * and use the functions that are return to interact with the state.
+ * 
+ * Defined a name for the state.
+ * 
+ * Pass in the initial value.
+ * 
+ * Defined actions for interacting with the state. 
+ * 
+ * Actions functions must return a new object.
+ * 
+ * @returns Returns a tuple where the first item is a custom hook
+ * for subscribing to the state. The second item is a function for
+ * retrieving the actions that are used to interact with the state.
+ * 
+ * 
+ * @example
+ * const [useCounterStore, useCounterActions] = createStore(
+ *  {
+ *    name: 'counter', initialState: { count: 0 },
+ *    actions: {
+ *      increment: (state) => ({count: state.count + 1}),
+ *      add: (state, amount) => ({count: state.count + amount}) 
+ *    }
+ *  }
+ * );
+ * 
+ * // The state is stored inside a property with a key that
+ * // is the same as the name provided during store creation.
+ * const { count } = useCounterStore(state => state.Counter.count);
+ * const counterActions = useCounterActions(actions => actions);
+ * counterActions.add(3);
+ * 
  */
 export const createStore = <S, Name extends string, A extends Actions<S>>(options: StoreOptions<S, Name, A>):
 [SelectFn<State<Name, S>, (state: State<Name, S>) => S>, SelectFn<ActionsWithoutState<A>['actions'], (actions: ActionsWithoutState<A>['actions']) => ActionsWithoutState<A>['actions'][keyof ActionsWithoutState<A>['actions']]>] => {
