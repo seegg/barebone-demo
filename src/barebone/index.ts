@@ -93,7 +93,7 @@ export type CreateStoreResults<S, N extends string, A extends Actions<S>> = Extr
  * 
  * // The state is stored inside a property with a key that
  * // is the same as the name provided during store creation.
- * const { count } = useCounterStore(state => state.Counter.count);
+ * const { count } = useCounterStore(state => state.counter.count);
  * const counterActions = useCounterActions(actions => actions);
  * counterActions.add(3);
  * 

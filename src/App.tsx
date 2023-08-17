@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { createStore } from './barebone'
+
+const [useCounterStore, useCounterActions] = createStore({name: 'counter', initialState: 0, 
+actions: {increment: (state)=> {
+  return state+1}}})
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <InnerCounter count={1}/>
+      <InnerCounter count={2}/>
+      <InnerCounter count={3}/>
     </>
   )
 }
 
 export default App
+
+interface Count {
+  count: number;
+}
+
+const InnerCounter = ({count}: Count)=>{
+  const counter = useCounterStore(state => state.counter);
+  const incr = useCounterActions(actions => actions.increment);
+  return (
+    <div>
+      <h1>Counter #{count}</h1>
+      <div className="card">
+        <button onClick={incr}>
+          count is {counter}
+        </button>
+      </div>
+    </div>
+  )
+}
