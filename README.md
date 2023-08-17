@@ -16,6 +16,9 @@ when the actions are called.
 After the store is created the state param for actions is hidden and
 only the user defined ones are exposed.
 
+When updating a state, a new state must be returned instead of altering
+the existing one.
+
 ```ts
 import {createStore} from './barebone'
 
