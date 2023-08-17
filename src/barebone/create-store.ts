@@ -129,10 +129,10 @@ export const createActions = <
   // return a new state and then updates all the listeners
   // with the new state.
   for (const key in actions) {
-    result.actions[key] = (payload?: unknown) => {
+    result.actions[key] = (...payload: unknown[]) => {
       // Calculate the new state and call the equality function
       // of each listener to see if they should be rerendered or not.
-      const newStateValue = actions[key](state[storeName], payload);
+      const newStateValue = actions[key](state[storeName], ...payload);
       const newState = {[storeName]: newStateValue} as StoreState;
       stateListeners.forEach((listener) => {
         if(listener.equalFn){

@@ -34,7 +34,7 @@ export interface StoreOptions<
  * Functions for manipulating the state.
  */
 export interface Actions<State = any> {
-  [key: string]: (state: State, payload?: any) => State;
+  [key: string]: (state: State, ...payload: any[]) => State;
 }
 
 /**
@@ -42,13 +42,20 @@ export interface Actions<State = any> {
  * first argument(state) is removed.
  */
 export type ActionsWithoutState<T extends Actions> = {
-  /** Functions for manipulating the state. */
   actions: {
-    [key in keyof T]: Parameters<T[key]>['length'] extends 2
-      ? (payload: Parameters<T[key]>[1]) => Parameters<T[key]>[0]
-      : () => Parameters<T[key]>[0];
+    [key in keyof T]: ProcessedAction<T[key]>;
   };
 };
+
+/** Remove the first item on an array. */
+type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U] ? U : never
+
+export type ProcessedAction<
+  Action extends (...args: any)=> any, 
+  Params extends Parameters<Action> = Parameters<Action>
+> = Params['length'] extends 1
+  ? ()=> Params[0]
+  : (...payload:RemoveFirstItem<Params>) => Params[0];
 
 /**
  * Extracts the name from the store options and
