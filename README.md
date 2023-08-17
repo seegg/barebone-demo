@@ -5,7 +5,8 @@ Simple React state management using hooks and with typing for TS.
 a simple counter shared between sibling components.
 
 ```ts
-//Set up the store outside of components.
+// Set up the store outside of components.
+// Any changes to the state must return a new state.
 export const [useCounterStore, useCounterActions] = createStore({
   name: 'counter',
   initialState: { count: 0 },
