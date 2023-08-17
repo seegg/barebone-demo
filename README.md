@@ -9,9 +9,13 @@ Setting up the store. The `createStore` function returns two custom
 hooks, the first is for accessing the state and the second is for
 accessing the actions. 
 
-For actions, the first param is always the state of the store. The
-second is an optional param defined by the user and is used for
-passing in arguments when the action is called.
+For actions, the first param is always the state of the store. Any
+number of optional params can be added for passing in arguments
+when the actions are called.
+
+After the store is created the state param for actions is hidden and
+only the user defined ones are exposed.
+
 ```ts
 import {createStore} from './barebone'
 
@@ -19,10 +23,17 @@ export const [useCounterStore, useCounterActions] = createStore({
   name: 'counter',
   initialState: { count: 0 },
   actions: {
-    increment: state => ({...state, count: state.count + 1}),
-    setCounterTo: (state, value: number) => ({...state, count: value}),
+    increment: (state) => ({ ...state, count: state.count + 1 }),
+    setCounterTo: (state, value: number) => ({ ...state, count: value }),
+    addMultiple: (state, one: number, two: number) => ({
+      ...state,
+      count: state.count + one + two,
+    }),
   },
 });
+
+//addMultiple becomes
+(one: number, two: number) ...
 ```
 
 Import and use the hooks as normal. Both hooks uses a function
