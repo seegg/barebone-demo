@@ -2,16 +2,27 @@ import './App.css'
 import { createStore } from './barebone'
 
 const [useCounterStore, useCounterActions] = createStore({name: 'counter', initialState: 0, 
-actions: {increment: (state)=> {
-  return state+1}}})
+actions: {
+  increment: (state)=> state + 1,
+  reset: () => 0
+}
+})
 
 
 function App() {
+  const {reset} = useCounterActions(actions => actions);
   return (
     <>
-      <InnerCounter count={1}/>
-      <InnerCounter count={2}/>
-      <InnerCounter count={3}/>
+      <div className='reset-button'>
+        <button onClick={reset}>
+          Reset
+        </button>
+      </div>
+      <div className='counter-container'>
+        <InnerCounter count={1}/>
+        <InnerCounter count={2}/>
+        <InnerCounter count={3}/>
+      </div>
     </>
   )
 }
@@ -24,12 +35,12 @@ interface Count {
 
 const InnerCounter = ({count}: Count)=>{
   const counter = useCounterStore(state => state.counter);
-  const incr = useCounterActions(actions => actions.increment);
+  const increment = useCounterActions(actions => actions.increment);
   return (
     <div>
       <h1>Counter #{count}</h1>
       <div className="card">
-        <button onClick={incr}>
+        <button onClick={increment}>
           count is {counter}
         </button>
       </div>

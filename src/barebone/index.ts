@@ -54,8 +54,6 @@ export type ExtractStoreName<Name extends string, State> = {
   [key in Name]: State;
 }
 
-type SelectFn<S, T extends (state: S)=> ReturnType<T>> = (selectFn: T) => ReturnType<T>
-
 /** Keeps track of the states in components that are using the store. */
 export type StateListener = Map<unknown, (state: any)=>void>
 /** The state of the store */
@@ -98,8 +96,7 @@ export type CreateStoreResults<S, N extends string, A extends Actions<S>> = Extr
  * counterActions.add(3);
  * 
  */
-export const createStore = <S, Name extends string, A extends Actions<S>>(options: StoreOptions<S, Name, A>):
-[SelectFn<State<Name, S>, (state: State<Name, S>) => S>, SelectFn<ActionsWithoutState<A>['actions'], (actions: ActionsWithoutState<A>['actions']) => ActionsWithoutState<A>['actions'][keyof ActionsWithoutState<A>['actions']]>] => {
+export const createStore = <S, Name extends string, A extends Actions<S>>(options: StoreOptions<S, Name, A>) => {
   const state = {[options.name]: options.initialState} as  State<Name, S>;
   const stateListeners:StateListener = new Map();
 
@@ -108,7 +105,7 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(option
   const useActionSelect = createActions(options.actions, state, options.name, stateListeners);
   const useStoreSelect = createStoreHook(state, options.name, stateListeners);
 
-  return [useStoreSelect, useActionSelect];
+  return [useStoreSelect, useActionSelect] as [typeof useStoreSelect, typeof useActionSelect];
 };
 
 /**
