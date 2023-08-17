@@ -47,7 +47,7 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(
   options: StoreOptions<S, Name, A>,
 ) => {
   const state = { [options.name]: options.initialState } as State<Name, S>;
-  const stateListeners: StateListener = new Map();
+  const stateListeners: StateListener<State<Name, S>> = new Map();
 
   // Construct the hooks that are use to retrieve the
   // state and actions.
@@ -57,7 +57,7 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(
     options.name,
     stateListeners,
   );
-  const useStoreSelect = createStoreHook(state, options.name, stateListeners);
+  const useStoreSelect = createStoreHook(state, stateListeners);
 
   return [useStoreSelect, useActionSelect] as [
     typeof useStoreSelect,
@@ -65,14 +65,15 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(
   ];
 };
 
+type EqualityFn<State> = (newState: State, oldState: State) => boolean 
+
 /**
  * Create a custom hook that can be used inside functions to
  * retrieve the store state.
  */
-export const createStoreHook = <StoreState extends State, Name extends string>(
+export const createStoreHook = <StoreState extends State>(
   state: StoreState,
-  name: Name,
-  stateListeners: StateListener,
+  stateListeners: StateListener<StoreState>,
 ) => {
   /**
    * Creates a react state from the store and adds the setState
@@ -80,12 +81,22 @@ export const createStoreHook = <StoreState extends State, Name extends string>(
    */
   const useStoreSelect = <T extends (state: StoreState) => ReturnType<T>>(
     select: T,
+    equalFn?: EqualityFn<StoreState>
   ): ReturnType<T> => {
-    const [storeState, setStoreState] = useState<StoreState>(state[name]);
+    const [storeState, setStoreState] = useState<StoreState>(state);
+    // Use the setState function as the key to trigger rerenders at
+    // related components.
     if (!stateListeners.has(setStoreState)) {
-      stateListeners.set(setStoreState, setStoreState);
+      stateListeners.set(setStoreState, {setState: setStoreState});
     }
-    return select({ [name]: storeState } as StoreState);
+    // Add the equality function to stateListener that is use to check if
+    // the specific component should rerender or not.
+    if(equalFn){
+      // not possible for listener to be undefined.
+      const listener = stateListeners.get(setStoreState); 
+      listener!.equalFn = equalFn;
+    }
+    return select(storeState as StoreState);
   };
 
   return useStoreSelect;
@@ -103,7 +114,7 @@ export const createActions = <
   actions: A,
   state: StoreState,
   storeName: Name,
-  stateListeners: StateListener,
+  stateListeners: StateListener<StoreState>,
 ) => {
   const result = { actions: {} } as ActionsWithoutState<A>;
   // Construct a wrapper function for the action that hides
@@ -112,11 +123,20 @@ export const createActions = <
   // with the new state.
   for (const key in actions) {
     result.actions[key] = (payload?: unknown) => {
-      const newState = actions[key](state[storeName], payload);
-      state[storeName] = newState;
+      // Calculate the new state and call the equality function
+      // of each listener to see if they should be rerendered or not.
+      const newStateValue = actions[key](state[storeName], payload);
+      const newState = {[storeName]: newStateValue} as StoreState;
       stateListeners.forEach((listener) => {
-        listener(newState);
+        if(listener.equalFn){
+          if(listener.equalFn(newState, state[storeName])){
+            listener.setState(newState);
+          }         
+        }else{
+          listener.setState(newState);
+        }
       });
+      state = newState;
     };
   }
 

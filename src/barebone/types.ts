@@ -59,8 +59,25 @@ export type ExtractStoreName<Name extends string, State> = {
   [key in Name]: State;
 };
 
-/** Keeps track of the states in components that are using the store. */
-export type StateListener = Map<unknown, (state: any) => void>;
+export type StateListener<State> = Map<
+  unknown,
+  {
+    /** Updates the state of a component using the store 
+     * hook and causing a rerender. 
+     */
+    setState: (state: any) => void,
+    /**
+     * Check to see if the listener's state should be
+     * updated or not.
+     * @param oldState The old store state.
+     * @param newState The new store state.
+     * @returns Whether the state for this listener should
+     * be updated or not.
+     */
+    equalFn?: (oldState: State, newState: State) => boolean
+  }
+>;
+
 /** The state of the store */
 export type State<Name extends string = string, S = any> = { [key in Name]: S };
 
