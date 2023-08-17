@@ -4,9 +4,17 @@ Simple React state management using hooks and with typing for TS.
 [Demo](https://seegg.github.io/Barebone-state-management/) using
 a simple counter shared between sibling components.
 
+
+Setting up the store. The `createStore` function returns two custom
+hooks, the first is for accessing the state and the second is for
+accessing the actions. 
+
+For actions, the first param is always the state of the store. The
+second is an optional param defined by the user and is used for
+passing in arguments when the action is called.
 ```ts
-// Set up the store outside of components.
-// Any changes to the state must return a new state.
+import {createStore} from './barebone'
+
 export const [useCounterStore, useCounterActions] = createStore({
   name: 'counter',
   initialState: { count: 0 },
@@ -17,16 +25,18 @@ export const [useCounterStore, useCounterActions] = createStore({
 });
 ```
 
+Import and use the hooks as normal. Both hooks uses a function
+for filtering specific values of the state and actions. For the 
+`useStore` hook, the values of the state is access through
+`state => state.<store name>` where `<store name>` is the name that
+was defined while creating the store.
 ```ts
-//Import and use the hooks.
-import {useCounterStore, useCounterActions} from '...'
+import {useCounterStore, useCounterActions} from './counterStore'
 
 const Counter = () => {
   const count = useCounterStore(state => state.counter.count);
   const actions = useCounterActions(actions => actions);
 
-  // After the actions are exported only the non-state
-  // param is exposed. 
   const setCountTo = (value: number) => {
     actions.setCounterTo(value);
   }
