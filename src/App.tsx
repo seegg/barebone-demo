@@ -1,12 +1,5 @@
 import './App.css'
-import { createStore } from './barebone'
-
-const [useCounterStore, useCounterActions] = createStore({name: 'counter', initialState: 0, 
-actions: {
-  increment: (state)=> state + 1,
-  reset: () => 0
-}
-})
+import {useCounterStore, useCounterActions} from './store'
 
 
 function App() {
@@ -29,11 +22,11 @@ function App() {
 
 export default App
 
-interface Count {
+interface Counter {
   count: number;
 }
 
-const InnerCounter = ({count}: Count)=>{
+const InnerCounter = ({count}: Counter)=>{
   const counter = useCounterStore(state => state.counter);
   const increment = useCounterActions(actions => actions.increment);
   return (
