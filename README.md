@@ -56,11 +56,11 @@ The useStore hook also accepts an optional equality function
 to check if the local state should be updated or not and rerender
 the component.
 
-```ts
+The equality check is called when the state of the store
+changes with the new state and the old state passed in as
+arguments.
 
-// The equality check is called when the state of the store
-// changes with the new state and the old state passed in as
-// arguments.
+```ts
 const Counter = () => {
   // Only update the local count if the store count is bigger
   // than the local count by at least 3.
