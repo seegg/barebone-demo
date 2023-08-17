@@ -44,7 +44,7 @@ Import and use the hooks as normal. Both hooks uses a function
 for filtering specific values of the state and actions. For the 
 `useStore` hook, the values of the state is access through
 `state => state.<store name>` where `<store name>` is the name that
-was defined while creating the store.
+was provided while creating the store.
 ```ts
 import {useCounterStore, useCounterActions} from './counterStore'
 
