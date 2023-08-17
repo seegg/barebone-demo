@@ -76,8 +76,15 @@ export const createStoreHook = <StoreState extends State>(
   stateListeners: StateListener<StoreState>,
 ) => {
   /**
-   * Creates a react state from the store and adds the setState
-   * function to the listener for triggering updates.
+   * A Hook use for accessing the state of the store.
+   * 
+   * @param select Function that takes the store state as the argument
+   * and can be use to narrow down the value returned.
+   * @param equalFn Function that is called when the store state updates.
+   * The new state and the old state is passed in as arguments. Can be
+   * use to decide whether to trigger local state update and rerender the
+   * component.
+   * @returns 
    */
   const useStoreSelect = <T extends (state: StoreState) => ReturnType<T>>(
     select: T,
@@ -129,7 +136,7 @@ export const createActions = <
       const newState = {[storeName]: newStateValue} as StoreState;
       stateListeners.forEach((listener) => {
         if(listener.equalFn){
-          if(listener.equalFn(newState, state[storeName])){
+          if(listener.equalFn(newState, state)){
             listener.setState(newState);
           }         
         }else{
@@ -139,7 +146,13 @@ export const createActions = <
       state = newState;
     };
   }
-
+  /**
+   * A function for accessing the user defined actions that are 
+   * used to manipulate the store state.
+   * 
+   * @param select A function with all the actions of the store
+   * as argument. Can be use to select a set of specific actions.
+   */
   const useActionSelect = <
     T extends (actions: ActionsWithoutState<A>['actions']) => ReturnType<T>,
   >(

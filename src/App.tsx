@@ -27,7 +27,7 @@ interface Counter {
 }
 
 const InnerCounter = ({count}: Counter)=>{
-  const counter = useCounterStore(state => {return state.counter});
+  const counter = useCounterStore(state => {return state.counter}, (state)=> state.counter % 3 == 0);
   const increment = useCounterActions(actions => actions.increment);
   return (
     <div>
