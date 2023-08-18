@@ -78,7 +78,9 @@ const TitleController = ({count}: Counter)=>{
         <button onClick={counterActions.increment}>
           count is {counter}
         </button>
-        <p>Only increment counter for multiples of 3.</p>
+        <p>
+          Only update counter for multiples of 3 by passing in by passing in a function that checks against new state changes.
+          </p>
         <input type='text' value={title} onChange={handleOnChange}/>
       </div>
     </div>
