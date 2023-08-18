@@ -50,12 +50,17 @@ export type ActionsWithoutState<T extends Actions> = {
 /** Remove the first item on an array. */
 type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U] ? U : never
 
+/**
+ * If the number of params is less than or equal
+ * 1 then make the function signature empty, otherwise
+ * remove the first param from the function signature.
+ */
 export type ProcessedAction<
   Action extends (...args: any)=> any, 
   Params extends Parameters<Action> = Parameters<Action>
-> = Params['length'] extends 1
+> = Params['length'] extends 1|0
   ? ()=> Params[0]
-  : (...payload:RemoveFirstItem<Params>) => Params[0];
+  : (...payload: RemoveFirstItem<Params>) => Params[0];
 
 /**
  * Extracts the name from the store options and
