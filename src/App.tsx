@@ -7,6 +7,7 @@ function App() {
   return (
     <>
       <div className='reset-button'>
+        <p>A simple demo using a counter shared between components.</p>
         <button onClick={reset}>
           Reset
         </button>
@@ -49,6 +50,7 @@ const TitleController = ({count}: Counter)=>{
     state => {return state.counter}, 
     state => state.counter % 3 == 0
   );
+  const counterActions = useCounterActions(actions => actions);
   const title = useTitleStore(state => state.Title.value);
   const titleActions = useTitleActions(actions => actions);
 
@@ -60,7 +62,7 @@ const TitleController = ({count}: Counter)=>{
     <div>
       <h1 className='card-title'>{title} {count && '#'+count}</h1>
       <div className="card">
-        <button>
+        <button onClick={counterActions.increment}>
           count is {counter}
         </button>
         <p>Only increment counter for multiples of 3.</p>

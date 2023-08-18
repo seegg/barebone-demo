@@ -72,8 +72,8 @@ to check if the local state should be updated or not and rerender
 the component.
 
 The equality check is called when the state of the store
-changes with the new state and the old state passed in as
-arguments.
+changes, the new state and the old state is then passed in as
+arguments to the function.
 
 ```ts
 const Counter = () => {
