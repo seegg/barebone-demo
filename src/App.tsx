@@ -1,16 +1,24 @@
 import './App.css'
+import githubLogoImg from '../public/github-32px.png';
 import {useCounterStore, useCounterActions, useTitleStore, useTitleActions} from './store'
 
 
 function App() {
   const {reset} = useCounterActions(actions => actions);
+  const updateTitle = useTitleActions(actions => actions.updateTitle);
+
+  const handleOnClick = ()=>{
+    reset();
+    updateTitle('Counter');
+  }
   return (
     <>
       <div className='reset-button'>
-        <p>A simple demo using a counter shared between components.</p>
-        <button onClick={reset}>
+        
+        <button onClick={handleOnClick}>
           Reset
         </button>
+        <h4>Barebone React state management demo</h4>
         <p>Click the button the increment the counters.</p>
         <p>Use the input to the change the card titles.</p>
       </div>
@@ -19,6 +27,11 @@ function App() {
         <InnerCounter count={2}/>
         <TitleController count={3}/>
       </div>
+      <Contact 
+        url='https://github.com/seegg/Barebone-state-management' 
+        img={githubLogoImg} 
+        alt='github logo linking to repo.'
+      />
     </>
   )
 }
@@ -72,3 +85,18 @@ const TitleController = ({count}: Counter)=>{
   )
 }
 
+interface IContact {
+  url: string;
+  img: string;
+  alt: string;
+}
+
+const Contact = ({url, img, alt}: IContact)=>{
+
+  return(
+    <a href={url} className='contact'>
+      <img src={img} alt={alt}/>
+    </a>
+  )
+
+}
