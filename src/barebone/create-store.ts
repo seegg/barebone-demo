@@ -66,55 +66,55 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(
   ];
 };
 
-type EqualityFn<State> = (newState: State, oldState: State) => boolean 
+type EqualityFn<State> = (newState: State, oldState: State) => boolean;
 
 /**
- * Custom hook for accessing the store state, takes a select 
+ * Custom hook for accessing the store state, takes a select
  * function as the first param that is use for selecting specific
  * properties from the store.
  */
-type UseStoreHook<
-  StoreState, 
-  SelectFn extends (...args: any)=> any,
-> = (select: SelectFn, equalFn?: EqualityFn<StoreState>) => ReturnType<SelectFn>;
+type UseStoreHook<StoreState, SelectFn extends (...args: any) => any> = (
+  select: SelectFn,
+  equalFn?: EqualityFn<StoreState>,
+) => ReturnType<SelectFn>;
 
 /**
  * Create a custom hook that can be used inside functions to
  * retrieve the store state.
  */
 export const createStoreHook = <
-  StoreState extends State, 
-  T extends (state: StoreState) => ReturnType<T>
-  >(
-    state: StoreState,
-    stateListeners: StateListener<StoreState>,
-  ): UseStoreHook<StoreState, T> => {
+  StoreState extends State,
+  T extends (state: StoreState) => ReturnType<T>,
+>(
+  state: StoreState,
+  stateListeners: StateListener<StoreState>,
+): UseStoreHook<StoreState, T> => {
   /**
    * A Hook use for accessing the state of the store.
-   * 
+   *
    * @param select Function that takes the store state as the argument
    * and can be use to narrow down the value returned.
    * @param equalFn Function that is called when the store state updates.
    * The new state and the old state is passed in as arguments. Can be
    * use to decide whether to trigger local state update and rerender the
    * component.
-   * @returns 
+   * @returns
    */
   const useStoreSelect = <T extends (state: StoreState) => ReturnType<T>>(
     select: T,
-    equalFn?: EqualityFn<StoreState>
+    equalFn?: EqualityFn<StoreState>,
   ): ReturnType<T> => {
     const [storeState, setStoreState] = useState<StoreState>(state);
     // Use the setState function as the key to trigger rerenders at
     // related components.
     if (!stateListeners.has(setStoreState)) {
-      stateListeners.set(setStoreState, {setState: setStoreState});
+      stateListeners.set(setStoreState, { setState: setStoreState });
     }
     // Add the equality function to stateListener that is use to check if
     // the specific component should rerender or not.
-    if(equalFn){
+    if (equalFn) {
       // not possible for listener to be undefined.
-      const listener = stateListeners.get(setStoreState); 
+      const listener = stateListeners.get(setStoreState);
       listener!.equalFn = equalFn;
     }
     return select(storeState);
@@ -136,7 +136,13 @@ export const createActions = <
   state: StoreState,
   storeName: Name,
   stateListeners: StateListener<StoreState>,
-):<T extends (actions: { [key in keyof A]: ProcessedAction<A[key], Parameters<A[key]>>; }) => ReturnType<T>>(select: T) => ReturnType<T> => {
+): (<
+  T extends (actions: {
+    [key in keyof A]: ProcessedAction<A[key], Parameters<A[key]>>;
+  }) => ReturnType<T>,
+>(
+  select: T,
+) => ReturnType<T>) => {
   const result = { actions: {} } as ActionsWithoutState<A>;
   // Construct a wrapper function for the action that hides
   // the state. when this is called it uses the action to
@@ -147,13 +153,13 @@ export const createActions = <
       // Calculate the new state and call the equality function
       // of each listener to see if they should be rerendered or not.
       const newStateValue = actions[key](state[storeName], ...payload);
-      const newState = {[storeName]: newStateValue} as StoreState;
+      const newState = { [storeName]: newStateValue } as StoreState;
       stateListeners.forEach((listener) => {
-        if(listener.equalFn){
-          if(listener.equalFn(newState, state)){
+        if (listener.equalFn) {
+          if (listener.equalFn(newState, state)) {
             listener.setState(newState);
-          }         
-        }else{
+          }
+        } else {
           listener.setState(newState);
         }
       });
@@ -161,9 +167,9 @@ export const createActions = <
     };
   }
   /**
-   * A function for accessing the user defined actions that are 
+   * A function for accessing the user defined actions that are
    * used to manipulate the store state.
-   * 
+   *
    * @param select A function with all the actions of the store
    * as argument. Can be use to select a set of specific actions.
    */

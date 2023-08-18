@@ -48,7 +48,9 @@ export type ActionsWithoutState<T extends Actions> = {
 };
 
 /** Remove the first item on an array. */
-type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U] ? U : never
+type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U]
+  ? U
+  : never;
 
 /**
  * If the number of params is less than or equal
@@ -56,10 +58,10 @@ type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U] ? U : ne
  * remove the first param from the function signature.
  */
 export type ProcessedAction<
-  Action extends (...args: any)=> any, 
-  Params extends Parameters<Action> = Parameters<Action>
-> = Params['length'] extends 1|0
-  ? ()=> Params[0]
+  Action extends (...args: any) => any,
+  Params extends Parameters<Action> = Parameters<Action>,
+> = Params['length'] extends 1 | 0
+  ? () => Params[0]
   : (...payload: RemoveFirstItem<Params>) => Params[0];
 
 /**
@@ -74,10 +76,10 @@ export type ExtractStoreName<Name extends string, State> = {
 export type StateListener<State> = Map<
   unknown,
   {
-    /** Updates the state of a component using the store 
-     * hook and causing a rerender. 
+    /** Updates the state of a component using the store
+     * hook and causing a rerender.
      */
-    setState: (state: any) => void,
+    setState: (state: any) => void;
     /**
      * Check to see if the listener's state should be
      * updated or not.
@@ -86,7 +88,7 @@ export type StateListener<State> = Map<
      * @returns Whether the state for this listener should
      * be updated or not.
      */
-    equalFn?: (oldState: State, newState: State) => boolean
+    equalFn?: (oldState: State, newState: State) => boolean;
   }
 >;
 

@@ -1,4 +1,4 @@
-import { createStore } from './barebone'
+import { createStore } from './barebone';
 
 export const [useCounterStore, useCounterActions] = createStore({
   name: 'counter',
@@ -9,12 +9,11 @@ export const [useCounterStore, useCounterActions] = createStore({
   },
 });
 
-
 export const [useTitleStore, useTitleActions] = createStore({
   name: 'Title',
   initialState: { value: 'Counter' },
   actions: {
     /** Update the title. */
-    updateTitle: (state, value: string)=> ({...state, value})
-  }
-})
+    updateTitle: (state, value: string) => ({ ...state, value }),
+  },
+});
