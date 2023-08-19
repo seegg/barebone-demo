@@ -46,6 +46,8 @@ for filtering specific values of the state and actions. For the
 `useStore` hook, the values of the state is access through
 `state => state.<store name>` where `<store name>` is the name that
 was provided while creating the store.
+
+Actions can be imported use outside of components.
 ```ts
 import {useCounterStore, useCounterActions} from './counterStore'
 
