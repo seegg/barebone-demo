@@ -7,7 +7,7 @@ import type {
   StateListener,
   ActionsWithoutState,
   EqualityFn,
-  ProcessedAction,
+  StoreActions,
 } from './types';
 
 /**
@@ -63,7 +63,10 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(
   const useStoreSelect = createStoreHook(state, stateListeners);
 
   return [useStoreSelect, useActionSelect] as [
-    typeof useStoreSelect,
+    <SelectFn extends (state: State<Name, S>) => ReturnType<SelectFn>>(
+      select: SelectFn,
+      equalFn?: EqualityFn<State<Name, S>>,
+    ) => ReturnType<SelectFn>,
     typeof useActionSelect,
   ];
 };
@@ -84,11 +87,11 @@ export const createStoreHook = <StoreState extends State>(
    *
    * @param select Function that takes the store state as the argument
    * and can be use to narrow down the value returned.
+   *
    * @param equalFn Function that is called when the store state updates.
    * The new state and the old state is passed in as arguments. Can be
    * use to decide whether to trigger local state update and rerender the
    * component.
-   * @returns
    */
   const useStoreSelect = <T extends (state: StoreState) => ReturnType<T>>(
     select: T,
@@ -126,22 +129,21 @@ export const createActions = <
   state: StoreState,
   storeName: Name,
   stateListeners: StateListener<StoreState>,
-): (<
-  SelectFn extends (actions: {
-    [key in keyof UserDefinedActions]: ProcessedAction<UserDefinedActions[key]>;
-  }) => ReturnType<SelectFn>,
->(
-  select: SelectFn,
-) => ReturnType<SelectFn>) => {
+): StoreActions<UserDefinedActions> => {
   const result = { actions: {} } as ActionsWithoutState<UserDefinedActions>;
-  // Construct a wrapper function for the action that hides
-  // the state. when this is called it uses the action to
-  // return a new state and then updates all the listeners
-  // with the new state.
+
+  /**
+   * Take each of the actions defined in during store creation and
+   * use a wrapper to hide the store state, this way only the params
+   * defined by the user will be available on the actions after the
+   * store has been created.
+   */
   for (const key in actions) {
+    /**
+     *
+     * @param payload user defined params from storeOptions in `createStore`.
+     */
     result.actions[key] = (...payload: unknown[]) => {
-      // Calculate the new state and call the equality function
-      // of each listener to see if they should be rerendered or not.
       const newStateValue = actions[key](state[storeName], ...payload);
       const newState = { [storeName]: newStateValue } as StoreState;
       stateListeners.forEach((listener) => {
@@ -156,22 +158,5 @@ export const createActions = <
       state = newState;
     };
   }
-  /**
-   * A function for accessing the user defined actions that are
-   * used to manipulate the store state.
-   *
-   * @param select A function with all the actions of the store
-   * as argument. Can be use to select a set of specific actions.
-   */
-  const useActionSelect = <
-    T extends (
-      actions: ActionsWithoutState<UserDefinedActions>['actions'],
-    ) => ReturnType<T>,
-  >(
-    select: T,
-  ): ReturnType<T> => {
-    return select(result.actions);
-  };
-
-  return useActionSelect;
+  return result.actions;
 };

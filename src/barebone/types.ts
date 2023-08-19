@@ -16,7 +16,7 @@ export interface StoreOptions<
    * a second user define argument.
    *
    * Action functions must return a new state and not
-   * just manipulate the existing state.
+   * just alter the existing state.
    *
    * @example
    * //Setting a counter to a specific value. and
