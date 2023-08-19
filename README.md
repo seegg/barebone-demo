@@ -20,11 +20,6 @@ hidden and only the user defined ones are exposed.
 When updating a state, a new state must be returned instead of mutating
 the existing one.
 
-For `asyncActions` the first param is a callback for setting the new state
-and the second param is the current state. Instead of directly returning 
-the new state, it's instead pass to the callback as an argument. This allows
-for running any additional code directly before and after the action.
-
 ```ts
 import {createStore} from './barebone'
 
@@ -46,20 +41,45 @@ export const {useStore, actions, store} = createStore({
 (one: number, two: number) => void
 // when imported from the store.
 ```
-##
-Import and use the hooks as normal. Both hooks uses a function
-for filtering specific values of the state and actions. For the 
-`useStore` hook, the values of the state is access through
-`state => state.<store name>` where `<store name>` is the name that
-was provided while creating the store.
+## Async Actions
+
+To use async actions, include them under `asyncActions` while creating the
+store. Unlike synchronous actions the first param is a callback for setting 
+the new state and the second param is the current state. Instead of directly 
+returning the new state, it's instead pass to the callback as an argument. 
+This allows for running any additional code directly before and after the 
+action. After creating the store, import and use async actions the same
+way as synchronous actions.
+
+```ts
+import {createStore} from './barebone'
+
+export const {useStore, asyncActions, store} = createStore({
+  name: 'counter',
+  initialState: { count: 0 },
+  asyncActions: {
+    // Delay updating the store by 3 seconds.
+    delayedAddToCount: async (setState, state, value: number) => {
+      const newState = {count: state.count + value};
+      console.log('Start updating counter store.')
+      await setTimeout(() => { setState(newState)}, 3000);
+      console.log('Updated counter store after 3 seconds.')
+    }
+  }
+});
+```
+## Using the store
+Import the hook and actions from where the store is defined.
+`useStore` uses a select function where the store is pass in
+as the argument and can be use for selecting specific properties
+from the store.
 
 Actions can be imported use outside of components.
 ```ts
-import {useCounterStore, useCounterActions} from './counterStore'
+import {useStore: useCounterStore, actions} from './counterStore'
 
 const Counter = () => {
   const count = useCounterStore(state => state.counter.count);
-  const actions = useCounterActions(actions => actions);
 
   const setCountTo = (value: number) => {
     actions.setCounterTo(value);
@@ -76,11 +96,13 @@ const Counter = () => {
 
 ```
 
-The useStore hook also accepts an optional function to test if
-the local state should be updated when the store is updated.
+The `useStore` hook also accepts an optional function to test if
+the local state should be updated along with the store.
 
-The check is done when the store is updating. The new state and
-the old state is pass to the function as the first two arguments.
+This check is done when the store is updating. The new state and
+the old state is pass to the function as the first two arguments for
+convenience and returns a boolean indicating whether the local state
+should be updated.
 
 ```ts
 const Counter = () => {
@@ -94,4 +116,3 @@ const Counter = () => {
 }
 
 ```
-

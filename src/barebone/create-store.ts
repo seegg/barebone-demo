@@ -44,7 +44,7 @@ import type {
  *      delayedAddToCount: async (setState, state, value: number) => {
  *        const newState = {count: state.count + value};
  *        // Wait 3000ms before updating the store.
- *        await setTimeout(() => { setStoreState(newState)}, 3000)
+ *        await setTimeout(() => { setState(newState)}, 3000)
  *      }
  *    }
  *  }
