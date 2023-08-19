@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
-import {
+import type {
   Actions,
   StoreOptions,
   State,
@@ -119,21 +119,21 @@ export const createStoreHook = <StoreState extends State>(
  */
 export const createActions = <
   StoreState extends State,
-  A extends Actions,
+  UserDefinedActions extends Actions,
   Name extends string,
 >(
-  actions: A,
+  actions: UserDefinedActions,
   state: StoreState,
   storeName: Name,
   stateListeners: StateListener<StoreState>,
 ): (<
-  T extends (actions: {
-    [key in keyof A]: ProcessedAction<A[key], Parameters<A[key]>>;
-  }) => ReturnType<T>,
+  SelectFn extends (actions: {
+    [key in keyof UserDefinedActions]: ProcessedAction<UserDefinedActions[key]>;
+  }) => ReturnType<SelectFn>,
 >(
-  select: T,
-) => ReturnType<T>) => {
-  const result = { actions: {} } as ActionsWithoutState<A>;
+  select: SelectFn,
+) => ReturnType<SelectFn>) => {
+  const result = { actions: {} } as ActionsWithoutState<UserDefinedActions>;
   // Construct a wrapper function for the action that hides
   // the state. when this is called it uses the action to
   // return a new state and then updates all the listeners
@@ -164,7 +164,9 @@ export const createActions = <
    * as argument. Can be use to select a set of specific actions.
    */
   const useActionSelect = <
-    T extends (actions: ActionsWithoutState<A>['actions']) => ReturnType<T>,
+    T extends (
+      actions: ActionsWithoutState<UserDefinedActions>['actions'],
+    ) => ReturnType<T>,
   >(
     select: T,
   ): ReturnType<T> => {
