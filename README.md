@@ -37,7 +37,7 @@ export const [useCounterStore, useCounterActions] = createStore({
 });
 
 // The signature of addMultiple becomes
-(one: number, two: number) ...
+(one: number, two: number) => state
 // when imported from the store.
 ```
 
