@@ -11,25 +11,24 @@ import type {
 } from './types';
 
 /**
- * Create a store with a given state outside of a functional component
- * and use the functions that are return to interact with the state.
+ * Creates a store for keeping track and manipulating a state
+ * that's pass to it.
  *
- * Defined a name for the state.
+ * @param options.name The name for the store.
  *
- * Pass in the value of the initial state.
+ * @param options.initialState Value of the initial state.
  *
- * Defined actions for interacting with the state.
- *
- * Actions must return a new state instead of altering the existing
+ * @param options.actions Optional, Defined actions for interacting with the state.
+ * Actions must return a new state instead of mutating the existing
  * state.
  *
  * @returns Returns a tuple where the first item is a custom hook
- * for subscribing to the state. The second item is a function for
- * retrieving the actions that are used to interact with the state.
+ * for subscribing to the state. The second item is an object containing
+ * all the actions.
  *
  *
  * @example
- * const [useCounterStore, useCounterActions] = createStore(
+ * const [useCounterStore, counterActions] = createStore(
  *  {
  *    name: 'counter', initialState: { count: 0 },
  *    actions: {
@@ -41,41 +40,48 @@ import type {
  *
  * // The state is stored inside a property with a key that
  * // is the same as the name provided during store creation.
+ * // Given the store options above, to access the count:
  * const { count } = useCounterStore(state => state.counter.count);
  * const counterActions = useCounterActions(actions => actions);
  * counterActions.add(3);
  *
  */
-export const createStore = <S, Name extends string, A extends Actions<S>>(
-  options: StoreOptions<S, Name, A>,
-) => {
-  const state = { [options.name]: options.initialState } as State<Name, S>;
-  const stateListeners: StateListener<State<Name, S>> = new Map();
+export const createStore = <
+  StateOption,
+  Name extends string,
+  ActionOption extends Actions<StateOption>,
+  SelectFn extends (state: State<Name, StateOption>) => ReturnType<SelectFn>,
+  StoreState extends State<Name, StateOption>,
+>(
+  options: StoreOptions<StateOption, Name, ActionOption>,
+): [
+  <StoreSelect extends SelectFn>(
+    select: StoreSelect,
+    equalFn?: EqualityFn<StoreState>,
+  ) => ReturnType<StoreSelect>,
+  StoreActions<ActionOption>,
+] => {
+  const state = { [options.name]: options.initialState } as StoreState;
+  const stateListeners: StateListener<StoreState> = new Map();
 
   // Construct the hooks that are use to retrieve the
   // state and actions.
   const useActionSelect = createActions(
-    options.actions,
+    options.actions || ({} as ActionOption),
     state,
     options.name,
     stateListeners,
   );
-  const useStoreSelect = createStoreHook(state, stateListeners);
+  const useStore = createUseStoreHook(state, stateListeners);
 
-  return [useStoreSelect, useActionSelect] as [
-    <SelectFn extends (state: State<Name, S>) => ReturnType<SelectFn>>(
-      select: SelectFn,
-      equalFn?: EqualityFn<State<Name, S>>,
-    ) => ReturnType<SelectFn>,
-    typeof useActionSelect,
-  ];
+  return [useStore, useActionSelect];
 };
 
 /**
  * Create a custom hook that can be used inside functions to
  * retrieve the store state.
  */
-export const createStoreHook = <StoreState extends State>(
+export const createUseStoreHook = <StoreState extends State>(
   state: StoreState,
   stateListeners: StateListener<StoreState>,
 ): (<SelectFn extends (state: StoreState) => ReturnType<SelectFn>>(
@@ -145,7 +151,9 @@ export const createActions = <
      */
     result.actions[key] = (...payload: unknown[]) => {
       const newStateValue = actions[key](state[storeName], ...payload);
-      const newState = { [storeName]: newStateValue } as StoreState;
+      const newState = {
+        [storeName]: newStateValue || state[storeName],
+      } as StoreState;
       stateListeners.forEach((listener) => {
         if (listener.equalFn) {
           if (listener.equalFn(newState, state)) {

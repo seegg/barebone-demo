@@ -16,7 +16,7 @@ export interface StoreOptions<
    * a second user define argument.
    *
    * Action functions must return a new state and not
-   * just alter the existing state.
+   * just mutating the existing state.
    *
    * @example
    * //Setting a counter to a specific value. and
@@ -28,7 +28,7 @@ export interface StoreOptions<
    *   increment: (state) => state + 1;
    * }
    */
-  actions: A;
+  actions?: A;
 }
 
 /**
@@ -89,17 +89,6 @@ export type StateListener<State> = Map<
 >;
 
 export type EqualityFn<State> = (newState: State, oldState: State) => boolean;
-
-/**
- * Type for the the useStore function returned by createStore
- *
- * Uses the type for the store state and the types of the select
- * and equality check functions.
- */
-export type UseStoreHook<StoreState, SelectFn extends (...args: any) => any> = (
-  select: SelectFn,
-  equalFn?: EqualityFn<StoreState>,
-) => ReturnType<SelectFn>;
 
 /**
  * Type for the actions available from the store.

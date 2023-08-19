@@ -2,15 +2,18 @@ import './App.css';
 import githubLogoImg from '/github-32px.png?url';
 import {
   useCounterStore,
-  useCounterActions,
+  counterActions,
   useTitleStore,
-  useTitleActions,
+  titleActions,
 } from './store';
 
 function App() {
+  /**
+   * Resets the states
+   */
   const handleOnClick = () => {
-    useCounterActions.reset();
-    useTitleActions.updateTitle('Counter');
+    counterActions.reset();
+    titleActions.updateTitle('Counter');
   };
   return (
     <>
@@ -58,9 +61,7 @@ const InnerCounter = ({ count, instruction }: Counter) => {
         {title} {count && '#' + count}
       </h1>
       <div className="card">
-        <button onClick={useCounterActions.increment}>
-          count is {counter}
-        </button>
+        <button onClick={counterActions.increment}>count is {counter}</button>
         <p>{instruction && instruction}</p>
       </div>
     </div>
@@ -77,7 +78,7 @@ const TitleController = ({ count, instruction }: Counter) => {
   const title = useTitleStore((state) => state.Title.value);
 
   const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    useTitleActions.updateTitle(ev.target.value);
+    titleActions.updateTitle(ev.target.value);
   };
 
   return (
@@ -86,9 +87,7 @@ const TitleController = ({ count, instruction }: Counter) => {
         {title} {count && '#' + count}
       </h1>
       <div className="card">
-        <button onClick={useCounterActions.increment}>
-          count is {counter}
-        </button>
+        <button onClick={counterActions.increment}>count is {counter}</button>
         <p>{instruction}</p>
         <input type="text" value={title} onChange={handleOnChange} />
       </div>

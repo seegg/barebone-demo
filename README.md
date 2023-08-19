@@ -16,7 +16,7 @@ when the actions are called.
 After the store is created the state param for actions is hidden and
 only the user defined ones are exposed.
 
-When updating a state, a new state must be returned instead of altering
+When updating a state, a new state must be returned instead of mutating
 the existing one.
 
 ```ts
