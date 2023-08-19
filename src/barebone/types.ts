@@ -1,8 +1,9 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export interface StoreOptions<
-  State = any,
-  Name extends string = string,
-  A extends Actions<State> = any,
+  State,
+  Name extends string,
+  UserDefinedActions extends Actions<State>,
+  UserDefinedActionsAsync extends AsyncActions<State>,
 > {
   /**
    * A name use to identify the store.
@@ -28,7 +29,8 @@ export interface StoreOptions<
    *   increment: (state) => state + 1;
    * }
    */
-  actions?: A;
+  actions?: UserDefinedActions;
+  asyncActions?: UserDefinedActionsAsync;
 }
 
 /**
@@ -46,7 +48,7 @@ export interface AsyncActions<State = any> {
   ) => Promise<State>;
 }
 
-export type SetState<State = any> = (state: State) => void;
+export type SetState<State> = (state: State) => void;
 
 /** Remove the first item on an array. */
 type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U]

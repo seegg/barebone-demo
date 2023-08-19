@@ -7,6 +7,7 @@ import type {
   StateListeners,
   EqualityFn,
   StoreActions,
+  AsyncActions,
 } from './types';
 
 /**
@@ -14,12 +15,17 @@ import type {
  * that's pass to it.
  *
  * @param options.name The name for the store.
- *
  * @param options.initialState Value of the initial state.
+ * @param options.actions Optional, actions for interacting with the state.
+ * The first param of an action function is the state and it accepts
+ * any number of additional params for passing in additional data.
  *
- * @param options.actions Optional, Defined actions for interacting with the state.
  * Actions must return a new state instead of mutating the existing
  * state.
+ * @param options.asyncActions Optional, async actions. Unlike synchronous
+ * actions where the new state is returned async actions has a callback function
+ * as the first param which accepts the new state as the argument updates the store.
+ * The second param is now the state.
  *
  * @returns Returns a tuple where the first item is a custom hook
  * for subscribing to the state. The second item is an object containing
@@ -33,6 +39,13 @@ import type {
  *    actions: {
  *      increment: (state) => ({count: state.count + 1}),
  *      add: (state, amount) => ({count: state.count + amount})
+ *    },
+ *    asyncActions: {
+ *      delayedAddToCount: async (setState, state, value: number) => {
+ *        const newState = {count: state.count + value};
+ *        // Wait 3000ms before updating the store.
+ *        await setTimeout(() => { setStoreState(newState)}, 3000)
+ *      }
  *    }
  *  }
  * );
@@ -49,10 +62,11 @@ export const createStore = <
   StateOption,
   Name extends string,
   ActionOption extends Actions<StateOption>,
+  AsyncActionOptions extends AsyncActions<StateOption>,
   SelectFn extends (state: State<Name, StateOption>) => ReturnType<SelectFn>,
   StoreState extends State<Name, StateOption>,
 >(
-  options: StoreOptions<StateOption, Name, ActionOption>,
+  options: StoreOptions<StateOption, Name, ActionOption, AsyncActionOptions>,
 ): [
   <StoreSelect extends SelectFn>(
     select: StoreSelect,
