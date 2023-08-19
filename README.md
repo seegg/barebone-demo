@@ -7,7 +7,7 @@ a simple counter shared between sibling components.
 ## Creating the store
 The `createStore` function returns an object
 ```ts
-const {useStore, actions, asyncActions, store} = useStore({...storeOptions});
+const {useStore, actions, asyncActions, store} = createStore({...storeOptions});
 ```
 `useStore` is for accessing the store inside a functional component. 
 `actions` contains functions defined by the user for interacting with 
@@ -76,7 +76,7 @@ Import the hook and actions from where the store is defined.
 as the argument and can be use for selecting specific properties
 from the store.
 
-Actions can be imported use outside of components.
+Actions are not restricted to components and can be use anywhere.
 ```ts
 import {useStore: useCounterStore, actions} from './counterStore'
 
