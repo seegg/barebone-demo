@@ -15,7 +15,8 @@ export interface StoreOptions<
    * pass in as the first argument and it optionally accepts
    * a second user define argument.
    *
-   * Actions must return a new state.
+   * Action functions must return a new state and not
+   * just manipulate the existing state.
    *
    * @example
    * //Setting a counter to a specific value. and
@@ -31,21 +32,11 @@ export interface StoreOptions<
 }
 
 /**
- * Functions for manipulating the state.
+ * Type for user defined functions to manipulate the state.
  */
 export interface Actions<State = any> {
   [key: string]: (state: State, ...payload: any[]) => State;
 }
-
-/**
- * Maps the actions function to a wrapper where the
- * first argument(state) is removed.
- */
-export type ActionsWithoutState<T extends Actions> = {
-  actions: {
-    [key in keyof T]: ProcessedAction<T[key]>;
-  };
-};
 
 /** Remove the first item on an array. */
 type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U]
@@ -53,9 +44,10 @@ type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U]
   : never;
 
 /**
- * If the number of params is less than or equal
- * 1 then make the function signature empty, otherwise
- * remove the first param from the function signature.
+ * Functions with 0 or 1 param will have no params.
+ *
+ * Functions with 2 or more params will have the first
+ * param removed.
  */
 export type ProcessedAction<
   Action extends (...args: any) => any,
@@ -64,10 +56,14 @@ export type ProcessedAction<
   ? () => Params[0]
   : (...payload: RemoveFirstItem<Params>) => Params[0];
 
+export type ActionsWithoutState<T extends Actions> = {
+  actions: {
+    [key in keyof T]: ProcessedAction<T[key]>;
+  };
+};
+
 /**
- * Extracts the name from the store options and
- * creates property with the name as key and the state
- * as the value.
+ * Use for extracting the name from the store options.
  */
 export type ExtractStoreName<Name extends string, State> = {
   [key in Name]: State;
@@ -92,11 +88,38 @@ export type StateListener<State> = Map<
   }
 >;
 
+export type EqualityFn<State> = (newState: State, oldState: State) => boolean;
+
+/**
+ * Type for the the useStore function returned by createStore
+ *
+ * Uses the type for the store state and the types of the select
+ * and equality check functions.
+ */
+export type UseStoreHook<StoreState, SelectFn extends (...args: any) => any> = (
+  select: SelectFn,
+  equalFn?: EqualityFn<StoreState>,
+) => ReturnType<SelectFn>;
+
+/**
+ * Type for the actions available from the store.
+ *
+ * Uses the types of the user defined actions during store
+ * creation to create the final type.
+ */
+export type StoreActions<ActionsCollection extends Actions> = {
+  [key in keyof ActionsCollection]: ProcessedAction<ActionsCollection[key]>;
+};
+
+/**
+ * Type for the function to retrieving actions from the store.
+ *
+ * Uses the type of the select function that is accepted by
+ * the actions function to get the final return type.
+ */
+export type useActionsHook<SelectFn extends (...args: any) => any> = (
+  select: SelectFn,
+) => ReturnType<SelectFn>;
+
 /** The state of the store */
 export type State<Name extends string = string, S = any> = { [key in Name]: S };
-
-export type CreateStoreResults<
-  S,
-  N extends string,
-  A extends Actions<S>,
-> = ExtractStoreName<N, S> & ActionsWithoutState<A>;

@@ -8,11 +8,11 @@ import {
 } from './store';
 
 function App() {
-  const { reset } = useCounterActions((actions) => actions);
+  const counterActions = useCounterActions((actions) => actions);
   const updateTitle = useTitleActions((actions) => actions.updateTitle);
 
   const handleOnClick = () => {
-    reset();
+    counterActions.reset();
     updateTitle('Counter');
   };
   return (

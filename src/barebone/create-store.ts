@@ -6,6 +6,7 @@ import {
   State,
   StateListener,
   ActionsWithoutState,
+  EqualityFn,
   ProcessedAction,
 } from './types';
 
@@ -15,11 +16,12 @@ import {
  *
  * Defined a name for the state.
  *
- * Pass in the initial value.
+ * Pass in the value of the initial state.
  *
  * Defined actions for interacting with the state.
  *
- * Actions functions must return a new object.
+ * Actions must return a new state instead of altering the existing
+ * state.
  *
  * @returns Returns a tuple where the first item is a custom hook
  * for subscribing to the state. The second item is a function for
@@ -66,30 +68,17 @@ export const createStore = <S, Name extends string, A extends Actions<S>>(
   ];
 };
 
-type EqualityFn<State> = (newState: State, oldState: State) => boolean;
-
-/**
- * Type for the the useStore function returned by createStore
- *
- * Uses the type for the store state and the types of the select
- * and equality check functions.
- */
-export type UseStoreHook<StoreState, SelectFn extends (...args: any) => any> = (
-  select: SelectFn,
-  equalFn?: EqualityFn<StoreState>,
-) => ReturnType<SelectFn>;
-
 /**
  * Create a custom hook that can be used inside functions to
  * retrieve the store state.
  */
-export const createStoreHook = <
-  StoreState extends State,
-  T extends (state: StoreState) => ReturnType<T>,
->(
+export const createStoreHook = <StoreState extends State>(
   state: StoreState,
   stateListeners: StateListener<StoreState>,
-): UseStoreHook<StoreState, T> => {
+): (<SelectFn extends (state: StoreState) => ReturnType<SelectFn>>(
+  select: SelectFn,
+  equalFn?: EqualityFn<StoreState>,
+) => ReturnType<SelectFn>) => {
   /**
    * A Hook use for accessing the state of the store.
    *
@@ -124,14 +113,6 @@ export const createStoreHook = <
   return useStoreSelect;
 };
 
-type StoreActions<ActionsCollection extends Actions> = {
-  [key in keyof ActionsCollection]: ProcessedAction<ActionsCollection[key]>;
-};
-
-type useActionsHook<SelectFn extends (...args: any) => any> = (
-  select: SelectFn,
-) => ReturnType<SelectFn>;
-
 /**
  * Turns the user functions defined at store creation into actions
  * use to interact with the store state.
@@ -140,13 +121,18 @@ export const createActions = <
   StoreState extends State,
   A extends Actions,
   Name extends string,
-  T extends (actions: StoreActions<A>) => ReturnType<T>,
 >(
   actions: A,
   state: StoreState,
   storeName: Name,
   stateListeners: StateListener<StoreState>,
-): useActionsHook<T> => {
+): (<
+  T extends (actions: {
+    [key in keyof A]: ProcessedAction<A[key], Parameters<A[key]>>;
+  }) => ReturnType<T>,
+>(
+  select: T,
+) => ReturnType<T>) => {
   const result = { actions: {} } as ActionsWithoutState<A>;
   // Construct a wrapper function for the action that hides
   // the state. when this is called it uses the action to

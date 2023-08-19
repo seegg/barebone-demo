@@ -26,12 +26,13 @@ export const [useCounterStore, useCounterActions] = createStore({
   name: 'counter',
   initialState: { count: 0 },
   actions: {
-    increment: (state) => ({ ...state, count: state.count + 1 }),
+    increment: (state) => ({ count: state.count + 1 }),
     setCounterTo: (state, value: number) => ({ ...state, count: value }),
     addMultiple: (state, one: number, two: number) => ({
       ...state,
       count: state.count + one + two,
     }),
+    reset: () => ({count: 0})
   },
 });
 
@@ -67,13 +68,11 @@ const Counter = () => {
 
 ```
 
-The useStore hook also accepts an optional equality function
-to check if the local state should be updated or not and rerender
-the component.
+The useStore hook also accepts an optional function to test if
+the local state should be updated when the store is updated.
 
-The equality check is called when the state of the store
-changes, the new state and the old state is then passed in as
-arguments to the function.
+The check is done when the store is updating. The new state and
+the old state is pass to the function as the first two arguments.
 
 ```ts
 const Counter = () => {
