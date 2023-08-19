@@ -5,12 +5,14 @@ Simple React state management using hooks and with typing for TS.
 a simple counter shared between sibling components.
 
 ## Creating the store
-Setting up the store. The `createStore` function returns an object
-containing `{useStore, actions, asyncActions, store}`. `useStore` is
-for accessing the store inside a functional component. `actions` contains
-functions defined by the user for interacting with the store.
-`asyncActions` is the same as `actions` but for async functions. `store`
-is use for accessing the store outside of components.
+The `createStore` function returns an object
+```ts
+const {useStore, actions, asyncActions, store} = useStore({...storeOptions});
+```
+`useStore` is for accessing the store inside a functional component. 
+`actions` contains functions defined by the user for interacting with 
+the store. `asyncActions` is the same as `actions` but for async functions. 
+`store` is for accessing the store outside of React components.
 
 When defining `actions` the first param is the state, any additional
 param can be included for passing in additional data when the `action`
