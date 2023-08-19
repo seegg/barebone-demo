@@ -8,12 +8,9 @@ import {
 } from './store';
 
 function App() {
-  const counterActions = useCounterActions((actions) => actions);
-  const updateTitle = useTitleActions((actions) => actions.updateTitle);
-
   const handleOnClick = () => {
-    counterActions.reset();
-    updateTitle('Counter');
+    useCounterActions.reset();
+    useTitleActions.updateTitle('Counter');
   };
   return (
     <>
@@ -54,7 +51,6 @@ interface Counter {
 
 const InnerCounter = ({ count, instruction }: Counter) => {
   const counter = useCounterStore((state) => state.counter);
-  const increment = useCounterActions((actions) => actions.increment);
   const title = useTitleStore((state) => state.Title.value);
   return (
     <div>
@@ -62,7 +58,9 @@ const InnerCounter = ({ count, instruction }: Counter) => {
         {title} {count && '#' + count}
       </h1>
       <div className="card">
-        <button onClick={increment}>count is {counter}</button>
+        <button onClick={useCounterActions.increment}>
+          count is {counter}
+        </button>
         <p>{instruction && instruction}</p>
       </div>
     </div>
@@ -76,12 +74,10 @@ const TitleController = ({ count, instruction }: Counter) => {
     },
     (state) => state.counter % 3 == 0,
   );
-  const counterActions = useCounterActions((actions) => actions);
   const title = useTitleStore((state) => state.Title.value);
-  const titleActions = useTitleActions((actions) => actions);
 
   const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    titleActions.updateTitle(ev.target.value);
+    useTitleActions.updateTitle(ev.target.value);
   };
 
   return (
@@ -90,7 +86,9 @@ const TitleController = ({ count, instruction }: Counter) => {
         {title} {count && '#' + count}
       </h1>
       <div className="card">
-        <button onClick={counterActions.increment}>count is {counter}</button>
+        <button onClick={useCounterActions.increment}>
+          count is {counter}
+        </button>
         <p>{instruction}</p>
         <input type="text" value={title} onChange={handleOnChange} />
       </div>
