@@ -26,5 +26,9 @@ export const [useTitleStore, titleActions] = createStore({
      * @param value value of the new title.
      */
     updateTitle: (state, value: string) => ({ ...state, value }),
+    updateTitleAsync: async (state, value: string) => {
+      await 5;
+      return { ...state, value };
+    },
   },
 });

@@ -4,7 +4,7 @@ import type {
   Actions,
   StoreOptions,
   State,
-  StateListener,
+  StateListeners,
   ActionsWithoutState,
   EqualityFn,
   StoreActions,
@@ -62,7 +62,7 @@ export const createStore = <
   StoreActions<ActionOption>,
 ] => {
   const state = { [options.name]: options.initialState } as StoreState;
-  const stateListeners: StateListener<StoreState> = new Map();
+  const stateListeners: StateListeners<StoreState> = new Map();
 
   // Construct the hooks that are use to retrieve the
   // state and actions.
@@ -83,7 +83,7 @@ export const createStore = <
  */
 export const createUseStoreHook = <StoreState extends State>(
   state: StoreState,
-  stateListeners: StateListener<StoreState>,
+  stateListeners: StateListeners<StoreState>,
 ): (<SelectFn extends (state: StoreState) => ReturnType<SelectFn>>(
   select: SelectFn,
   equalFn?: EqualityFn<StoreState>,
@@ -134,7 +134,7 @@ export const createActions = <
   actions: UserDefinedActions,
   state: StoreState,
   storeName: Name,
-  stateListeners: StateListener<StoreState>,
+  stateListeners: StateListeners<StoreState>,
 ): StoreActions<UserDefinedActions> => {
   const result = { actions: {} } as ActionsWithoutState<UserDefinedActions>;
 
@@ -152,19 +152,34 @@ export const createActions = <
     result.actions[key] = (...payload: unknown[]) => {
       const newStateValue = actions[key](state[storeName], ...payload);
       const newState = {
-        [storeName]: newStateValue || state[storeName],
+        [storeName]: newStateValue,
       } as StoreState;
-      stateListeners.forEach((listener) => {
-        if (listener.equalFn) {
-          if (listener.equalFn(newState, state)) {
-            listener.setState(newState);
-          }
-        } else {
-          listener.setState(newState);
-        }
-      });
+      updateLocalStates(state, newState, stateListeners);
       state = newState;
     };
   }
   return result.actions;
+};
+
+/**
+ * Helper function for updating listeners when the store
+ * is being updated.
+ * @param oldState current store state.
+ * @param newState new state the store is being updated to.
+ * @param stateListeners list of listeners.
+ */
+const updateLocalStates = <StoreState extends State>(
+  oldState: StoreState,
+  newState: StoreState,
+  stateListeners: StateListeners<StoreState>,
+) => {
+  stateListeners.forEach((listener) => {
+    if (listener.equalFn) {
+      if (listener.equalFn(newState, oldState)) {
+        listener.setState(newState);
+      }
+    } else {
+      listener.setState(newState);
+    }
+  });
 };

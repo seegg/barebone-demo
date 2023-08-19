@@ -35,7 +35,11 @@ export interface StoreOptions<
  * Type for user defined functions to manipulate the state.
  */
 export interface Actions<State = any> {
-  [key: string]: (state: State, ...payload: any[]) => State;
+  [key: string]: (state: State, ...payload: any[]) => State | Promise<State>;
+}
+
+export interface AsyncActions<State = any> {
+  [key: string]: (state: State, ...payload: any[]) => Promise<State>;
 }
 
 /** Remove the first item on an array. */
@@ -53,8 +57,8 @@ export type ProcessedAction<
   Action extends (...args: any) => any,
   Params extends Parameters<Action> = Parameters<Action>,
 > = Params['length'] extends 1 | 0
-  ? () => Params[0]
-  : (...payload: RemoveFirstItem<Params>) => Params[0];
+  ? () => void
+  : (...payload: RemoveFirstItem<Params>) => void;
 
 export type ActionsWithoutState<T extends Actions> = {
   actions: {
@@ -69,7 +73,7 @@ export type ExtractStoreName<Name extends string, State> = {
   [key in Name]: State;
 };
 
-export type StateListener<State> = Map<
+export type StateListeners<State> = Map<
   unknown,
   {
     /** Updates the state of a component using the store
