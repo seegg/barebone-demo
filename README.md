@@ -4,25 +4,31 @@ Simple React state management using hooks and with typing for TS.
 [Demo](https://seegg.github.io/Barebone-state-management/) using
 a simple counter shared between sibling components.
 
+## Creating the store
+Setting up the store. The `createStore` function returns an object
+containing `{useStore, actions, asyncActions, store}`. `useStore` is
+for accessing the store inside a functional component. `actions` contains
+functions defined by the user for interacting with the store.
+`asyncActions` is the same as `actions` but for async functions. `store`
+is use for accessing the store outside of components.
 
-Setting up the store. The `createStore` function returns two custom
-hooks, the first is for accessing the state and the second is for
-accessing the actions. 
-
-For actions, the first param is always the state of the store. Any
-number of optional params can be added for passing in arguments
-when the actions are called.
-
-After the store is created the state param for actions is hidden and
-only the user defined ones are exposed.
+When defining `actions` the first param is the state, any additional
+param can be included for passing in additional data when the `action`
+is called. After the store is created the state param for actions is 
+hidden and only the user defined ones are exposed.
 
 When updating a state, a new state must be returned instead of mutating
 the existing one.
 
+For `asyncActions` the first param is a callback for setting the new state
+and the second param is the current state. Instead of directly returning 
+the new state, it's instead pass to the callback as an argument. This allows
+for running any additional code directly before and after the action.
+
 ```ts
 import {createStore} from './barebone'
 
-export const [useCounterStore, useCounterActions] = createStore({
+export const {useStore, actions, store} = createStore({
   name: 'counter',
   initialState: { count: 0 },
   actions: {
@@ -40,7 +46,7 @@ export const [useCounterStore, useCounterActions] = createStore({
 (one: number, two: number) => void
 // when imported from the store.
 ```
-
+##
 Import and use the hooks as normal. Both hooks uses a function
 for filtering specific values of the state and actions. For the 
 `useStore` hook, the values of the state is access through
