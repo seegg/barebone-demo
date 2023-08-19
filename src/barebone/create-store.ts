@@ -146,7 +146,6 @@ export const createActions = <
    */
   for (const key in actions) {
     /**
-     *
      * @param payload user defined params from storeOptions in `createStore`.
      */
     result.actions[key] = (...payload: unknown[]) => {
