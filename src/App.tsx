@@ -1,5 +1,5 @@
 import './App.css';
-import githubLogoImg from '../public/github-32px.png';
+import githubLogoImg from '/github-32px.png?url';
 import {
   useCounterStore,
   useCounterActions,
