@@ -39,30 +39,79 @@ export interface Actions<State = any> {
 }
 
 export interface AsyncActions<State = any> {
-  [key: string]: (state: State, ...payload: any[]) => Promise<State>;
+  [key: string]: (
+    setState: SetState<State>,
+    state: State,
+    ...payload: any[]
+  ) => Promise<State>;
 }
+
+export type SetState<State = any> = (state: State) => void;
 
 /** Remove the first item on an array. */
 type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U]
   ? U
   : never;
 
+/** Remove first two items from array. */
+export type RemoveFirstTwoItem<T extends unknown[]> = T extends [
+  any,
+  any,
+  ...infer U,
+]
+  ? U
+  : never;
+
 /**
- * Functions with 0 or 1 param will have no params.
+ * Remove the first N items from an array.
  *
- * Functions with 2 or more params will have the first
- * param removed.
+ * To construct the type items are removed
+ * one at a time from the target array and added
+ * to a second array until the length of the second
+ * array equals N. Whatever is left in the target
+ * array is then returned.
+ */
+export type RemoveFirstNItem<
+  Arr extends unknown[],
+  N extends number,
+  T extends unknown[] = [],
+> = T['length'] extends N
+  ? Arr
+  : Arr extends [infer M, ...infer Rest]
+  ? RemoveFirstNItem<Rest, N, [M, ...T]>
+  : never;
+
+type SyncPramCount = 0 | 1;
+type AsyncParamCount = 0 | 1 | 2;
+/**
+ * Remove default params from actions leaving
+ * only user defined params.
+ *
+ * For synchronous actions the number is 1, for
+ * async actions it's 2.
+ *
+ * To account for all cases all numbers of params
+ * below the desired count also needs to be provided.
+ *
+ * i.e. To remove
  */
 export type ProcessedAction<
-  Action extends (...args: any) => any,
-  Params extends Parameters<Action> = Parameters<Action>,
-> = Params['length'] extends 1 | 0
+  Action extends (...args: any) => any | Promise<any>,
+  N extends number,
+  Params extends any[] = Parameters<Action>,
+> = Params['length'] extends N
   ? () => void
   : (...payload: RemoveFirstItem<Params>) => void;
 
 export type ActionsWithoutState<T extends Actions> = {
   actions: {
-    [key in keyof T]: ProcessedAction<T[key]>;
+    [key in keyof T]: ProcessedAction<T[key], SyncPramCount>;
+  };
+};
+
+export type AsyncActionsWithoutState<T extends AsyncActions> = {
+  actions: {
+    [key in keyof T]: ProcessedAction<T[key], AsyncParamCount>;
   };
 };
 
@@ -101,7 +150,10 @@ export type EqualityFn<State> = (newState: State, oldState: State) => boolean;
  * creation to create the final type.
  */
 export type StoreActions<ActionsCollection extends Actions> = {
-  [key in keyof ActionsCollection]: ProcessedAction<ActionsCollection[key]>;
+  [key in keyof ActionsCollection]: ProcessedAction<
+    ActionsCollection[key],
+    SyncPramCount
+  >;
 };
 
 /**

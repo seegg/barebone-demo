@@ -5,7 +5,6 @@ import type {
   StoreOptions,
   State,
   StateListeners,
-  ActionsWithoutState,
   EqualityFn,
   StoreActions,
 } from './types';
@@ -125,6 +124,8 @@ export const createUseStoreHook = <StoreState extends State>(
 /**
  * Turns the user functions defined at store creation into actions
  * use to interact with the store state.
+ *
+ * For async actions, isAsync must be set to true.
  */
 export const createActions = <
   StoreState extends State,
@@ -135,8 +136,9 @@ export const createActions = <
   state: StoreState,
   storeName: Name,
   stateListeners: StateListeners<StoreState>,
+  isAsync = false,
 ): StoreActions<UserDefinedActions> => {
-  const result = { actions: {} } as ActionsWithoutState<UserDefinedActions>;
+  const result = {} as StoreActions<UserDefinedActions>;
 
   /**
    * Take each of the actions defined in during store creation and
@@ -148,20 +150,36 @@ export const createActions = <
     /**
      * @param payload user defined params from storeOptions in `createStore`.
      */
-    result.actions[key] = (...payload: unknown[]) => {
-      const newStateValue = actions[key](state[storeName], ...payload);
-      const newState = {
-        [storeName]: newStateValue,
-      } as StoreState;
-      updateLocalStates(state, newState, stateListeners);
-      state = newState;
+    result[key] = (...payload: unknown[]) => {
+      if (isAsync) {
+        /**
+         * A function pass to async actions as the first argument. Accepts
+         * the values that are use to update the store state.
+         * @param newStateValue values for updating the store.
+         */
+        const updateStateCallback = (newStateValue: any) => {
+          const newState = {
+            [storeName]: newStateValue,
+          } as StoreState;
+          updateLocalStates(state, newState, stateListeners);
+          state = newState;
+        };
+        actions[key](updateStateCallback, state[storeName], ...payload);
+      } else {
+        const newStateValue = actions[key](state[storeName], ...payload);
+        const newState = {
+          [storeName]: newStateValue,
+        } as StoreState;
+        updateLocalStates(state, newState, stateListeners);
+        state = newState;
+      }
     };
   }
-  return result.actions;
+  return result;
 };
 
 /**
- * Helper function for updating listeners when the store
+ * Helper function for informing listeners when the store
  * is being updated.
  * @param oldState current store state.
  * @param newState new state the store is being updated to.
@@ -173,6 +191,8 @@ const updateLocalStates = <StoreState extends State>(
   stateListeners: StateListeners<StoreState>,
 ) => {
   stateListeners.forEach((listener) => {
+    // Check if new store state meets conditions for
+    // each local state before updating that local state.
     if (listener.equalFn) {
       if (listener.equalFn(newState, oldState)) {
         listener.setState(newState);
