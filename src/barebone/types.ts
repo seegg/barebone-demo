@@ -7,7 +7,7 @@ export interface StoreOptions<
   /**
    * A name use to identify the store.
    */
-  name: Name extends 'state' | 'actions' ? never : Name;
+  name: Name;
   /** The initial state of the store. */
   initialState: State;
   /**
