@@ -20,13 +20,21 @@ function App() {
       <div className="reset-button">
         <button onClick={handleOnClick}>Reset</button>
         <h4>Barebone React state management demo</h4>
-        <p>Click the button the increment the counters.</p>
-        <p>Use the input to the change the card titles.</p>
       </div>
       <div className="counter-container">
-        <InnerCounter count={1} />
-        <InnerCounter count={2} />
-        <TitleController count={3} />
+        <InnerCounter
+          count={1}
+          instruction="Click the button the increment the counters."
+        />
+        <InnerCounter
+          count={2}
+          instruction="Use the text box to the change the card titles."
+        />
+        <TitleController
+          count={3}
+          instruction="Only update counter for multiples of 3 by passing in by passing in a
+          function that checks against new state changes."
+        />
       </div>
       <Contact
         url="https://github.com/seegg/Barebone-state-management"
@@ -41,9 +49,10 @@ export default App;
 
 interface Counter {
   count?: number;
+  instruction?: string;
 }
 
-const InnerCounter = ({ count }: Counter) => {
+const InnerCounter = ({ count, instruction }: Counter) => {
   const counter = useCounterStore((state) => state.counter);
   const increment = useCounterActions((actions) => actions.increment);
   const title = useTitleStore((state) => state.Title.value);
@@ -54,12 +63,13 @@ const InnerCounter = ({ count }: Counter) => {
       </h1>
       <div className="card">
         <button onClick={increment}>count is {counter}</button>
+        <p>{instruction && instruction}</p>
       </div>
     </div>
   );
 };
 
-const TitleController = ({ count }: Counter) => {
+const TitleController = ({ count, instruction }: Counter) => {
   const counter = useCounterStore(
     (state) => {
       return state.counter;
@@ -81,10 +91,7 @@ const TitleController = ({ count }: Counter) => {
       </h1>
       <div className="card">
         <button onClick={counterActions.increment}>count is {counter}</button>
-        <p>
-          Only update counter for multiples of 3 by passing in by passing in a
-          function that checks against new state changes.
-        </p>
+        <p>{instruction}</p>
         <input type="text" value={title} onChange={handleOnChange} />
       </div>
     </div>
