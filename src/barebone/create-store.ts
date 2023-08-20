@@ -27,23 +27,21 @@ import { ActionTypes } from './types';
  * as the first param which accepts the new state as the argument updates the store.
  * The second param is now the state.
  *
- * @returns Returns a tuple where the first item is a custom hook
- * for subscribing to the state. The second item is an object containing
- * all the actions.
+ * @returns \{useStore, actions, asyncActions, store}
  *
  *
  * @example
- * const [useCounterStore, counterActions] = createStore(
+ * const {useStore, actions, asyncActions} = createStore(
  *  {
  *    name: 'counter', initialState: { count: 0 },
  *    actions: {
  *      increment: (state) => ({count: state.count + 1}),
- *      add: (state, amount) => ({count: state.count + amount})
+ *      add: (state, amount: number) => ({count: state.count + amount})
  *    },
  *    asyncActions: {
  *      delayedAddToCount: async (setState, state, value: number) => {
  *        const newState = {count: state.count + value};
- *        await some async work...
+ *        await do some async work...
  *        setState(newState);
  *      }
  *    }
@@ -52,10 +50,11 @@ import { ActionTypes } from './types';
  *
  * // The state is stored inside a property with a key that
  * // is the same as the name provided during store creation.
- * // Given the store options above, to access the count:
- * const { count } = useCounterStore(state => state.counter.count);
- * const counterActions = useCounterActions(actions => actions);
- * counterActions.add(3);
+ * // Given the store options above, to access the count in the store:
+ * const count = useStore(state => state.counter.count);
+ *
+ * // Add to the count.
+ * actions.add(3);
  *
  */
 export const createStore = <
@@ -162,6 +161,19 @@ export const createActions = <
   actionType: ActionTypes = ActionTypes.sync,
 ): StoreActions<UserDefinedActions, typeof actionType> => {
   const result = {} as StoreActions<UserDefinedActions, typeof actionType>;
+
+  /**
+   * Helper function for updating the store with a new state.
+   * @param newStateValue values for updating the store.
+   */
+  const updateStateHelper = (newState: any) => {
+    const newStore = {
+      [storeName]: newState,
+    } as StoreState;
+    updateLocalStates(store, newStore, stateListeners);
+    store[storeName] = newState;
+  };
+
   /**
    * Take each of the actions defined in during store creation and
    * use a wrapper to hide the store state, this way only the params
@@ -174,26 +186,10 @@ export const createActions = <
      */
     result[key] = (...payload: unknown[]) => {
       if (actionType === ActionTypes.async) {
-        /**
-         * Callback pass to async actions as the first argument.
-         * Use for updating the store inside the async action.
-         * @param newStateValue values for updating the store.
-         */
-        const updateStateCallback = (newStateValue: any) => {
-          const newStore = {
-            [storeName]: newStateValue,
-          } as StoreState;
-          updateLocalStates(store, newStore, stateListeners);
-          store[storeName] = newStateValue;
-        };
-        actions[key](updateStateCallback, store[storeName], ...payload);
+        actions[key](updateStateHelper, store[storeName], ...payload);
       } else {
         const newStateValue = actions[key](store[storeName], ...payload);
-        const newStore = {
-          [storeName]: newStateValue,
-        } as StoreState;
-        updateLocalStates(store, newStore, stateListeners);
-        store[storeName] = newStateValue;
+        updateStateHelper(newStateValue);
       }
     };
   }
