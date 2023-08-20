@@ -1,3 +1,6 @@
+/**
+ * Examples of stores.
+ */
 import { createStore } from './barebone';
 
 export const [useCounterStore, counterActions] = createStore({
@@ -8,6 +11,20 @@ export const [useCounterStore, counterActions] = createStore({
     increment: (state) => state + 1,
     /** Reset the counter. */
     reset: () => 0,
+  },
+  asyncActions: {
+    /** Reset the counter after a delay. */
+    asyncReset: async (set) => {
+      let resolve: (value?: unknown) => void;
+      const promise = new Promise((res) => {
+        resolve = res;
+      });
+      setTimeout(() => {
+        set(0);
+        resolve();
+      }, 3000);
+      await promise;
+    },
   },
 });
 
@@ -26,9 +43,5 @@ export const [useTitleStore, titleActions] = createStore({
      * @param value value of the new title.
      */
     updateTitle: (state, value: string) => ({ ...state, value }),
-    updateTitleAsync: async (state, value: string) => {
-      await 5;
-      return { ...state, value };
-    },
   },
 });

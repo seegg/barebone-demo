@@ -11,13 +11,14 @@ const {useStore, actions, asyncActions, store} = createStore({...storeOptions});
 ```
 `useStore` is for accessing the store inside a functional component. 
 `actions` contains functions defined by the user for interacting with 
-the store. `asyncActions` is the same as `actions` but for async functions. 
-`store` is for accessing the store outside of React components.
+the store, both synchronous and asynchronous actions are accessed through
+`actions`.
 
 When defining `actions` the first param is the state, any additional
 param can be included for passing in additional data when the `action`
 is called. After the store is created the state param for actions is 
-hidden and only the user defined ones are exposed.
+hidden and only the user defined ones are exposed. See below for 
+async actions.
 
 When updating a state, a new state must be returned instead of mutating
 the existing one.
@@ -60,7 +61,7 @@ export const {useStore, asyncActions, store} = createStore({
   name: 'counter',
   initialState: { count: 0 },
   asyncActions: {
-    // Make a HTTP request for a new counter value.
+    // Make a HTTP request to fetch a counter value.
     setCounterAsync: async (setState, state, url: number) => {
       console.log('Fetching new counter.');
       const request = await fetch(url).json();

@@ -56,7 +56,7 @@ export interface StoreOptions<
  * Type for user defined functions to manipulate the state.
  */
 export interface Actions<State = any> {
-  [key: string]: (state: State, ...payload: any[]) => State | Promise<State>;
+  [key: string]: (state: State, ...payload: any[]) => State;
 }
 
 export interface AsyncActions<State = any> {
@@ -64,7 +64,7 @@ export interface AsyncActions<State = any> {
     setState: SetState<State>,
     state: State,
     ...payload: any[]
-  ) => Promise<State>;
+  ) => Promise<void>;
 }
 
 export type SetState<State> = (state: State) => void;
