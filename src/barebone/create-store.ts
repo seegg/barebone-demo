@@ -79,15 +79,22 @@ export const createStore = <
 
   // Construct the hooks that are use to retrieve the
   // state and actions.
-  const useActionSelect = createActions(
+  const actions = createActions(
     options.actions || ({} as ActionOption),
     state,
     options.name,
     stateListeners,
   );
+  // const asyncActions = createActions(
+  //   options.asyncActions || ({} as AsyncActionOptions),
+  //   state,
+  //   options.name,
+  //   stateListeners,
+  //   true,
+  // );
   const useStore = createUseStoreHook(state, stateListeners);
 
-  return [useStore, useActionSelect];
+  return [useStore, actions];
 };
 
 /**

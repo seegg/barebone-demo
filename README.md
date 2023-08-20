@@ -60,12 +60,11 @@ export const {useStore, asyncActions, store} = createStore({
   name: 'counter',
   initialState: { count: 0 },
   asyncActions: {
-    // Delay updating the store by 3 seconds.
-    delayedAddToCount: async (setState, state, value: number) => {
-      const newState = {count: state.count + value};
-      console.log('Start updating counter store.')
-      await setTimeout(() => { setState(newState)}, 3000);
-      console.log('Updated counter store after 3 seconds.')
+    // Make a HTTP request for a new counter value.
+    setCounterAsync: async (setState, state, url: number) => {
+      console.log('Fetching new counter.');
+      const request = await fetch(url).json();
+      setState({count: request.count});
     }
   }
 });
@@ -73,8 +72,8 @@ export const {useStore, asyncActions, store} = createStore({
 ## Using the store
 Import the hook and actions from where the store is defined.
 `useStore` uses a select function where the store is pass in
-as the argument and can be use for selecting specific properties
-from the store.
+as the argument and can be use for narrowing down specific
+properties.
 
 Actions are not restricted to components and can be use anywhere.
 ```ts

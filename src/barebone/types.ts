@@ -12,15 +12,17 @@ export interface StoreOptions<
   /** The initial state of the store. */
   initialState: State;
   /**
-   * Functions use to manipulate the state, the state is
-   * pass in as the first argument and it optionally accepts
-   * a second user define argument.
+   * Functions use for manipulate the store, the first param
+   * is the state and it accepts any number of additional params
+   * for passing in data when the action is called.
    *
    * Action functions must return a new state and not
    * just mutating the existing state.
    *
+   * For async functions, use `options.asyncActions`.
+   *
    * @example
-   * //Setting a counter to a specific value. and
+   * //Setting the counter to a specific value. and
    * //incrementing a counter.
    * {
    *   setCounter: (state, value: number) => {
@@ -30,6 +32,23 @@ export interface StoreOptions<
    * }
    */
   actions?: UserDefinedActions;
+  /**
+   * For async actions, the first two params in the function
+   * is a callback function and the state, the callback function
+   * is use to update the store once the new state is ready.
+   *
+   * Async actions accepts any number of additional params
+   * for passing in data when the action is called.
+   *
+   * @example
+   * {
+   *   // Make a HTTP request for a new counter value.
+   *   setCounterAsync: async (setState, state, url: string) => {
+          const request = await fetch(url).json();
+          setState(request.count);
+   *   },
+   * }
+   */
   asyncActions?: UserDefinedActionsAsync;
 }
 
@@ -104,12 +123,6 @@ export type ProcessedAction<
 > = Params['length'] extends N
   ? () => void
   : (...payload: RemoveFirstItem<Params>) => void;
-
-export type ActionsWithoutState<T extends Actions> = {
-  actions: {
-    [key in keyof T]: ProcessedAction<T[key], SyncPramCount>;
-  };
-};
 
 export type AsyncActionsWithoutState<T extends AsyncActions> = {
   actions: {
