@@ -3,34 +3,33 @@
  */
 import { createStore } from './barebone';
 
-export const [useCounterStore, counterActions, asyncActions] = createStore({
-  name: 'counter',
-  initialState: 0,
-  actions: {
-    /** Increment counter. */
-    increment: (state) => state + 1,
-    /** Reset the counter. */
-    reset: () => 0,
-  },
-  asyncActions: {
-    /** Reset the counter after a delay. */
-    asyncReset: async (set, state, num: number) => {
-      console.log(state, num);
-      let resolve: (value?: unknown) => void;
-      const promise = new Promise((res) => {
-        resolve = res;
-      });
-      setTimeout(() => {
-        resolve();
-      }, 3000);
-      await promise;
-      set(0);
+export const [useCounterStore, counterActions, asyncCounterActions] =
+  createStore({
+    name: 'counter',
+    initialState: 0,
+    actions: {
+      /** Increment counter. */
+      increment: (state) => state + 1,
+      /** Reset the counter. */
+      reset: () => 0,
     },
-  },
-});
-
-asyncActions.asyncReset;
-counterActions.increment;
+    asyncActions: {
+      /** Add 4 to the counter after some delay. */
+      addFourAsync: async (set, state) => {
+        titleActions.setTitle('updating...');
+        let resolve: (value?: unknown) => void;
+        const promise = new Promise((res) => {
+          resolve = res;
+        });
+        setTimeout(() => {
+          resolve();
+        }, 500);
+        await promise;
+        set(state + 4);
+        titleActions.setTitle('counter');
+      },
+    },
+  });
 
 const initialState = {
   /** Value of the title. */
@@ -43,9 +42,9 @@ export const [useTitleStore, titleActions] = createStore({
   /** Some actions */
   actions: {
     /**
-     * updates the title.
+     * set the title.
      * @param value value of the new title.
      */
-    updateTitle: (state, value: string) => ({ ...state, value }),
+    setTitle: (state, value: string) => ({ ...state, value }),
   },
 });

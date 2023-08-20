@@ -10,7 +10,6 @@ import {
   AsyncActions,
   ActionTypes,
 } from './types';
-
 /**
  * Creates a store for keeping track and manipulating a state
  * that's pass to it.
@@ -129,14 +128,12 @@ export const createUseStoreHook = <StoreState extends State>(
     // Use the setState function as the key to trigger rerenders at
     // related components.
     if (!stateListeners.has(setStoreState)) {
-      stateListeners.set(setStoreState, { setState: setStoreState });
-    }
-    // Add the equality function to stateListener that is use to check if
-    // the specific component should rerender or not.
-    if (equalFn) {
-      // not possible for listener to be undefined.
-      const listener = stateListeners.get(setStoreState);
-      listener!.equalFn = equalFn;
+      stateListeners.set(setStoreState, {
+        setState: setStoreState,
+        equalFn:
+          equalFn ||
+          ((oldState, newState) => select(oldState) !== select(newState)),
+      });
     }
     return select(storeState);
   };
@@ -162,7 +159,6 @@ export const createActions = <
   actionType: ActionTypes = ActionTypes.sync,
 ): StoreActions<UserDefinedActions, typeof actionType> => {
   const result = {} as StoreActions<UserDefinedActions, typeof actionType>;
-
   /**
    * Take each of the actions defined in during store creation and
    * use a wrapper to hide the store state, this way only the params
@@ -185,7 +181,7 @@ export const createActions = <
             [storeName]: newStateValue,
           } as StoreState;
           updateLocalStates(state, newState, stateListeners);
-          state = newState;
+          state[storeName] = newStateValue;
         };
         actions[key](updateStateCallback, state[storeName], ...payload);
       } else {
@@ -194,7 +190,7 @@ export const createActions = <
           [storeName]: newStateValue,
         } as StoreState;
         updateLocalStates(state, newState, stateListeners);
-        state = newState;
+        state[storeName] = newStateValue;
       }
     };
   }

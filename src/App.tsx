@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import './App.css';
 import githubLogoImg from '/github-32px.png?url';
 import {
@@ -5,6 +6,7 @@ import {
   counterActions,
   useTitleStore,
   titleActions,
+  asyncCounterActions,
 } from './store';
 
 function App() {
@@ -13,7 +15,7 @@ function App() {
    */
   const handleOnClick = () => {
     counterActions.reset();
-    titleActions.updateTitle('Counter');
+    titleActions.setTitle('Counter');
   };
   return (
     <>
@@ -29,8 +31,8 @@ function App() {
         />
         <InnerCounter
           count={2}
-          instruction="Use the text box to the change the card titles."
-          onButtonClick={counterActions.increment}
+          instruction="Add 4 to the counter with some delay."
+          onButtonClick={asyncCounterActions.addFourAsync}
         />
         <TitleController
           count={3}
@@ -58,6 +60,8 @@ interface Counter {
 const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
   const counter = useCounterStore((state) => state.counter);
   const title = useTitleStore((state) => state.Title.value);
+  const renderCount = useRef(0);
+  renderCount.current++;
   return (
     <div>
       <h1 className="card-title">
@@ -66,6 +70,10 @@ const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
       <div className="card">
         <button onClick={onButtonClick}>count is {counter}</button>
         <p>{instruction && instruction}</p>
+        <p>
+          render: {renderCount.current}{' '}
+          {renderCount.current > 1 ? 'times' : 'time'}.
+        </p>
       </div>
     </div>
   );
@@ -81,7 +89,7 @@ const TitleController = ({ count, instruction }: Counter) => {
   const title = useTitleStore((state) => state.Title.value);
 
   const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    titleActions.updateTitle(ev.target.value);
+    titleActions.setTitle(ev.target.value);
   };
 
   return (
