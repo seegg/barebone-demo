@@ -3,7 +3,7 @@
  */
 import { createStore } from './barebone';
 
-export const [useCounterStore, counterActions] = createStore({
+export const [useCounterStore, counterActions, asyncActions] = createStore({
   name: 'counter',
   initialState: 0,
   actions: {

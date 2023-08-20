@@ -74,7 +74,7 @@ type RemoveFirstItem<T extends unknown[]> = T extends [any, ...infer U]
   ? U
   : never;
 
-/** Remove first two items from array. */
+/** Remove first two items on array. */
 export type RemoveFirstTwoItem<T extends unknown[]> = T extends [
   any,
   any,
@@ -84,9 +84,9 @@ export type RemoveFirstTwoItem<T extends unknown[]> = T extends [
   : never;
 
 /**
- * Remove the first N items from an array.
+ * Remove the first N items on an array.
  *
- * To construct the type items are removed
+ * To construct the type, items are removed
  * one at a time from the target array and added
  * to a second array until the length of the second
  * array equals N. Whatever is left in the target
@@ -98,6 +98,8 @@ export type RemoveFirstNItem<
   T extends unknown[] = [],
 > = T['length'] extends N
   ? Arr
+  : T['length'] extends 0
+  ? never
   : Arr extends [infer M, ...infer Rest]
   ? RemoveFirstNItem<Rest, N, [M, ...T]>
   : never;

@@ -73,6 +73,7 @@ export const createStore = <
     equalFn?: EqualityFn<StoreState>,
   ) => ReturnType<StoreSelect>,
   StoreActions<ActionOption>,
+  StoreActions<AsyncActionOptions>,
 ] => {
   const state = { [options.name]: options.initialState } as StoreState;
   const stateListeners: StateListeners<StoreState> = new Map();
@@ -85,16 +86,16 @@ export const createStore = <
     options.name,
     stateListeners,
   );
-  // const asyncActions = createActions(
-  //   options.asyncActions || ({} as AsyncActionOptions),
-  //   state,
-  //   options.name,
-  //   stateListeners,
-  //   true,
-  // );
+  const asyncActions = createActions(
+    options.asyncActions || ({} as AsyncActionOptions),
+    state,
+    options.name,
+    stateListeners,
+    true,
+  );
   const useStore = createUseStoreHook(state, stateListeners);
 
-  return [useStore, actions];
+  return [useStore, actions, asyncActions];
 };
 
 /**
