@@ -26,7 +26,7 @@ function App() {
       <div className="counter-container">
         <InnerCounter
           count={1}
-          instruction="Click the button the increment the counters."
+          instruction="Click the button to increment the counters."
           onButtonClick={counterActions.increment}
         />
         <InnerCounter

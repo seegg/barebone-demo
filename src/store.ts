@@ -20,14 +20,14 @@ export const {
   asyncActions: {
     /** Add 4 to the counter after some delay. */
     addFourAsync: async (set, state) => {
-      titleActions.setTitle('updating...');
+      titleActions.setTitle('...');
       let resolve: (value?: unknown) => void;
       const promise = new Promise((res) => {
         resolve = res;
       });
       setTimeout(() => {
         resolve();
-      }, 500);
+      }, 1000);
       await promise;
       set(state + 4);
       titleActions.setTitle('counter');
