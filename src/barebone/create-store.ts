@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
-import {
+import type {
   Actions,
   StoreOptions,
   State,
@@ -8,8 +8,8 @@ import {
   EqualityFn,
   StoreActions,
   AsyncActions,
-  ActionTypes,
 } from './types';
+import { ActionTypes } from './types';
 /**
  * Creates a store for keeping track and manipulating a state
  * that's pass to it.
@@ -43,8 +43,8 @@ import {
  *    asyncActions: {
  *      delayedAddToCount: async (setState, state, value: number) => {
  *        const newState = {count: state.count + value};
- *        // Wait 3000ms before updating the store.
- *        await setTimeout(() => { setState(newState)}, 3000)
+ *        await some async work...
+ *        setState(newState);
  *      }
  *    }
  *  }
@@ -67,35 +67,36 @@ export const createStore = <
   StoreState extends State<Name, StateOption>,
 >(
   options: StoreOptions<StateOption, Name, ActionOption, AsyncActionOptions>,
-): [
-  <StoreSelect extends SelectFn>(
+): {
+  useStore: <StoreSelect extends SelectFn>(
     select: StoreSelect,
     equalFn?: EqualityFn<StoreState>,
-  ) => ReturnType<StoreSelect>,
-  StoreActions<ActionOption, ActionTypes.sync>,
-  StoreActions<AsyncActionOptions, ActionTypes.async>,
-] => {
-  const state = { [options.name]: options.initialState } as StoreState;
+  ) => ReturnType<StoreSelect>;
+  actions: StoreActions<ActionOption, ActionTypes.sync>;
+  asyncActions: StoreActions<AsyncActionOptions, ActionTypes.async>;
+  store: StoreState;
+} => {
+  const store = { [options.name]: options.initialState } as StoreState;
   const stateListeners: StateListeners<StoreState> = new Map();
 
   // Construct the hooks that are use to retrieve the
   // state and actions.
   const actions = createActions(
     options.actions || ({} as ActionOption),
-    state,
+    store,
     options.name,
     stateListeners,
   );
   const asyncActions = createActions(
     options.asyncActions || ({} as AsyncActionOptions),
-    state,
+    store,
     options.name,
     stateListeners,
     2,
   );
-  const useStore = createUseStoreHook(state, stateListeners);
+  const useStore = createUseStoreHook(store, stateListeners);
 
-  return [useStore, actions, asyncActions];
+  return { useStore, actions, asyncActions, store };
 };
 
 /**
@@ -103,7 +104,7 @@ export const createStore = <
  * retrieve the store state.
  */
 export const createUseStoreHook = <StoreState extends State>(
-  state: StoreState,
+  store: StoreState,
   stateListeners: StateListeners<StoreState>,
 ): (<SelectFn extends (state: StoreState) => ReturnType<SelectFn>>(
   select: SelectFn,
@@ -124,7 +125,7 @@ export const createUseStoreHook = <StoreState extends State>(
     select: T,
     equalFn?: EqualityFn<StoreState>,
   ): ReturnType<T> => {
-    const [storeState, setStoreState] = useState<StoreState>(state);
+    const [storeState, setStoreState] = useState<StoreState>(store);
     // Use the setState function as the listener for store changes
     // and trigger rerenders.
     if (!stateListeners.has(setStoreState)) {
@@ -155,7 +156,7 @@ export const createActions = <
   Name extends string,
 >(
   actions: UserDefinedActions,
-  state: StoreState,
+  store: StoreState,
   storeName: Name,
   stateListeners: StateListeners<StoreState>,
   actionType: ActionTypes = ActionTypes.sync,
@@ -174,25 +175,25 @@ export const createActions = <
     result[key] = (...payload: unknown[]) => {
       if (actionType === ActionTypes.async) {
         /**
-         * A function pass to async actions as the first argument. Accepts
-         * the values that are use to update the store state.
+         * Callback pass to async actions as the first argument.
+         * Use for updating the store inside the async action.
          * @param newStateValue values for updating the store.
          */
         const updateStateCallback = (newStateValue: any) => {
-          const newState = {
+          const newStore = {
             [storeName]: newStateValue,
           } as StoreState;
-          updateLocalStates(state, newState, stateListeners);
-          state[storeName] = newStateValue;
+          updateLocalStates(store, newStore, stateListeners);
+          store[storeName] = newStateValue;
         };
-        actions[key](updateStateCallback, state[storeName], ...payload);
+        actions[key](updateStateCallback, store[storeName], ...payload);
       } else {
-        const newStateValue = actions[key](state[storeName], ...payload);
-        const newState = {
+        const newStateValue = actions[key](store[storeName], ...payload);
+        const newStore = {
           [storeName]: newStateValue,
         } as StoreState;
-        updateLocalStates(state, newState, stateListeners);
-        state[storeName] = newStateValue;
+        updateLocalStates(store, newStore, stateListeners);
+        store[storeName] = newStateValue;
       }
     };
   }
@@ -202,25 +203,24 @@ export const createActions = <
 /**
  * Helper for calling the listeners when the store
  * is being updated.
- * @param oldState current store state.
- * @param newState new state the store is being updated to.
+ * @param oldStore current store state.
+ * @param newStore new state the store is being updated to.
  * @param stateListeners list of listeners.
  */
 const updateLocalStates = <StoreState extends State>(
-  oldState: StoreState,
-  newState: StoreState,
+  oldStore: StoreState,
+  newStore: StoreState,
   stateListeners: StateListeners<StoreState>,
 ) => {
   stateListeners.forEach((listener) => {
     // Check if new store state meets conditions for
     // each local state before updating that local state.
     if (listener.equalFn) {
-      if (listener.equalFn(newState, oldState)) {
-        console.log(newState, oldState);
-        listener.setState(newState);
+      if (listener.equalFn(newStore, oldStore)) {
+        listener.setState(newStore);
       }
     } else {
-      listener.setState(newState);
+      listener.setState(newStore);
     }
   });
 };

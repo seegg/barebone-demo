@@ -14,6 +14,9 @@ const {useStore, actions, asyncActions, store} = createStore({...storeOptions});
 the store, both synchronous and asynchronous actions are accessed through
 `actions`.
 
+The `name` option is use to identify the store, when accessing the store
+through the `useStore` hook, the state is selected through `state.< name >`.
+
 When defining `actions` the first param is the state, any additional
 param can be included for passing in additional data when the `action`
 is called. After the store is created the state param for actions is 
