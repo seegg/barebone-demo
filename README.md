@@ -1,7 +1,7 @@
 # [Barebone](src/barebone)
 Simple React state management using hooks and with typing for TS.
 
-[Demo](https://seegg.github.io/Barebone-state-management/) using
+[Demo](https://seegg.github.io/barebone-demo/) using
 a simple counter shared between sibling components.
 
 ## Creating the store
