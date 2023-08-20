@@ -106,6 +106,10 @@ the old state is pass to the function as the first two arguments for
 convenience and returns a boolean indicating whether the local state
 should be updated.
 
+If no callback function is supplied, the default behaviour is to do
+a strict comparison between the old state and the new state on the
+property the `useStore` hook has selected.
+
 ```ts
 const Counter = () => {
   // Only update the local count if the store count is bigger

@@ -125,14 +125,16 @@ export const createUseStoreHook = <StoreState extends State>(
     equalFn?: EqualityFn<StoreState>,
   ): ReturnType<T> => {
     const [storeState, setStoreState] = useState<StoreState>(state);
-    // Use the setState function as the key to trigger rerenders at
-    // related components.
+    // Use the setState function as the listener for store changes
+    // and trigger rerenders.
     if (!stateListeners.has(setStoreState)) {
       stateListeners.set(setStoreState, {
         setState: setStoreState,
+        // If not update check callback is provided, compare current state
+        // with new state by default to decide if rerender or not.
         equalFn:
           equalFn ||
-          ((oldState, newState) => select(oldState) !== select(newState)),
+          ((newState, oldState) => select(oldState) !== select(newState)),
       });
     }
     return select(storeState);
@@ -214,6 +216,7 @@ const updateLocalStates = <StoreState extends State>(
     // each local state before updating that local state.
     if (listener.equalFn) {
       if (listener.equalFn(newState, oldState)) {
+        console.log(newState, oldState);
         listener.setState(newState);
       }
     } else {

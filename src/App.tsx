@@ -36,8 +36,7 @@ function App() {
         />
         <TitleController
           count={3}
-          instruction="Only update counter for multiples of 3 by passing in by passing in a
-          function that checks against new state changes."
+          instruction="Only update counter for multiples of 3."
         />
       </div>
       <Contact
@@ -84,9 +83,11 @@ const TitleController = ({ count, instruction }: Counter) => {
     (state) => {
       return state.counter;
     },
-    (state) => state.counter % 3 == 0,
+    (state) => state.counter % 3 === 0 && state.counter > 0,
   );
   const title = useTitleStore((state) => state.Title.value);
+  const renderCount = useRef(0);
+  renderCount.current++;
 
   const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
     titleActions.setTitle(ev.target.value);
@@ -101,6 +102,10 @@ const TitleController = ({ count, instruction }: Counter) => {
         <button onClick={counterActions.increment}>count is {counter}</button>
         <p>{instruction}</p>
         <input type="text" value={title} onChange={handleOnChange} />
+        <p>
+          render: {renderCount.current}{' '}
+          {renderCount.current > 1 ? 'times' : 'time'}.
+        </p>
       </div>
     </div>
   );
