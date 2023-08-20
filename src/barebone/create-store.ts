@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
-import type {
+import {
   Actions,
   StoreOptions,
   State,
@@ -8,6 +8,7 @@ import type {
   EqualityFn,
   StoreActions,
   AsyncActions,
+  ActionTypes,
 } from './types';
 
 /**
@@ -72,8 +73,8 @@ export const createStore = <
     select: StoreSelect,
     equalFn?: EqualityFn<StoreState>,
   ) => ReturnType<StoreSelect>,
-  StoreActions<ActionOption>,
-  StoreActions<AsyncActionOptions>,
+  StoreActions<ActionOption, ActionTypes.sync>,
+  StoreActions<AsyncActionOptions, ActionTypes.async>,
 ] => {
   const state = { [options.name]: options.initialState } as StoreState;
   const stateListeners: StateListeners<StoreState> = new Map();
@@ -91,7 +92,7 @@ export const createStore = <
     state,
     options.name,
     stateListeners,
-    true,
+    2,
   );
   const useStore = createUseStoreHook(state, stateListeners);
 
@@ -158,9 +159,9 @@ export const createActions = <
   state: StoreState,
   storeName: Name,
   stateListeners: StateListeners<StoreState>,
-  isAsync = false,
-): StoreActions<UserDefinedActions> => {
-  const result = {} as StoreActions<UserDefinedActions>;
+  actionType: ActionTypes = ActionTypes.sync,
+): StoreActions<UserDefinedActions, typeof actionType> => {
+  const result = {} as StoreActions<UserDefinedActions, typeof actionType>;
 
   /**
    * Take each of the actions defined in during store creation and
@@ -173,7 +174,7 @@ export const createActions = <
      * @param payload user defined params from storeOptions in `createStore`.
      */
     result[key] = (...payload: unknown[]) => {
-      if (isAsync) {
+      if (actionType === ActionTypes.async) {
         /**
          * A function pass to async actions as the first argument. Accepts
          * the values that are use to update the store state.
@@ -201,7 +202,7 @@ export const createActions = <
 };
 
 /**
- * Helper function for informing listeners when the store
+ * Helper for calling the listeners when the store
  * is being updated.
  * @param oldState current store state.
  * @param newState new state the store is being updated to.

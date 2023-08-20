@@ -14,19 +14,23 @@ export const [useCounterStore, counterActions, asyncActions] = createStore({
   },
   asyncActions: {
     /** Reset the counter after a delay. */
-    asyncReset: async (set) => {
+    asyncReset: async (set, state, num: number) => {
+      console.log(state, num);
       let resolve: (value?: unknown) => void;
       const promise = new Promise((res) => {
         resolve = res;
       });
       setTimeout(() => {
-        set(0);
         resolve();
       }, 3000);
       await promise;
+      set(0);
     },
   },
 });
+
+asyncActions.asyncReset;
+counterActions.increment;
 
 const initialState = {
   /** Value of the title. */

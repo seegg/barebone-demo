@@ -25,10 +25,12 @@ function App() {
         <InnerCounter
           count={1}
           instruction="Click the button the increment the counters."
+          onButtonClick={counterActions.increment}
         />
         <InnerCounter
           count={2}
           instruction="Use the text box to the change the card titles."
+          onButtonClick={counterActions.increment}
         />
         <TitleController
           count={3}
@@ -50,9 +52,10 @@ export default App;
 interface Counter {
   count?: number;
   instruction?: string;
+  onButtonClick?: () => void | Promise<void>;
 }
 
-const InnerCounter = ({ count, instruction }: Counter) => {
+const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
   const counter = useCounterStore((state) => state.counter);
   const title = useTitleStore((state) => state.Title.value);
   return (
@@ -61,7 +64,7 @@ const InnerCounter = ({ count, instruction }: Counter) => {
         {title} {count && '#' + count}
       </h1>
       <div className="card">
-        <button onClick={counterActions.increment}>count is {counter}</button>
+        <button onClick={onButtonClick}>count is {counter}</button>
         <p>{instruction && instruction}</p>
       </div>
     </div>

@@ -52,6 +52,18 @@ export interface StoreOptions<
   asyncActions?: UserDefinedActionsAsync;
 }
 
+// Number of default params in each type of action.
+type SyncPramCount = 0 | 1;
+type AsyncParamCount = SyncPramCount | 2;
+
+// different types of actions.
+export enum ActionTypes {
+  /** sync actions */
+  sync = 1,
+  /** async actions */
+  async = 2,
+}
+
 /**
  * Type for user defined functions to manipulate the state.
  */
@@ -93,52 +105,42 @@ export type RemoveFirstTwoItem<T extends unknown[]> = T extends [
  * array is then returned.
  */
 export type RemoveFirstNItem<
-  Arr extends unknown[],
+  Target extends unknown[],
   N extends number,
   T extends unknown[] = [],
 > = T['length'] extends N
-  ? Arr
+  ? Target
   : T['length'] extends 0
   ? never
-  : Arr extends [infer M, ...infer Rest]
+  : Target extends [infer M, ...infer Rest]
   ? RemoveFirstNItem<Rest, N, [M, ...T]>
   : never;
 
-type SyncPramCount = 0 | 1;
-type AsyncParamCount = 0 | 1 | 2;
 /**
- * Remove default params from actions leaving
+ * Remove default params from sync actions leaving
  * only user defined params.
- *
- * For synchronous actions the number is 1, for
- * async actions it's 2.
- *
- * To account for all cases all numbers of params
- * below the desired count also needs to be provided.
- *
- * i.e. To remove
  */
 export type ProcessedAction<
-  Action extends (...args: any) => any | Promise<any>,
+  Action extends (...args: any) => any,
   N extends number,
   Params extends any[] = Parameters<Action>,
 > = Params['length'] extends N
   ? () => void
   : (...payload: RemoveFirstItem<Params>) => void;
 
-export type AsyncActionsWithoutState<T extends AsyncActions> = {
-  actions: {
-    [key in keyof T]: ProcessedAction<T[key], AsyncParamCount>;
-  };
-};
-
 /**
- * Use for extracting the name from the store options.
+ * Remove default params from async actions leaving
+ * only user defined params.
  */
-export type ExtractStoreName<Name extends string, State> = {
-  [key in Name]: State;
-};
+export type ProcessAsyncAction<
+  Action extends (...args: any) => Promise<any>,
+  N extends number,
+  Params extends any[] = Parameters<Action>,
+> = Params['length'] extends N
+  ? () => Promise<void>
+  : (...payload: RemoveFirstTwoItem<Params>) => Promise<void>;
 
+/** Map to keep track of listeners. */
 export type StateListeners<State> = Map<
   unknown,
   {
@@ -165,12 +167,17 @@ export type EqualityFn<State> = (newState: State, oldState: State) => boolean;
  *
  * Uses the types of the user defined actions during store
  * creation to create the final type.
+ *
+ * Use IsSync to differentiate between sync and
+ * Async actions.
  */
-export type StoreActions<ActionsCollection extends Actions> = {
-  [key in keyof ActionsCollection]: ProcessedAction<
-    ActionsCollection[key],
-    SyncPramCount
-  >;
+export type StoreActions<
+  ActionsCollection extends Actions,
+  ActionType extends ActionTypes,
+> = {
+  [key in keyof ActionsCollection]: ActionType extends ActionTypes.sync
+    ? ProcessedAction<ActionsCollection[key], SyncPramCount>
+    : ProcessAsyncAction<ActionsCollection[key], AsyncParamCount>;
 };
 
 /**
