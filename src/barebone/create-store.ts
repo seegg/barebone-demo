@@ -122,6 +122,7 @@ export const createUseStoreHook = <StoreState extends Store>(
     select: T,
     equalFn?: EqualityFn<StoreState>,
   ): ReturnType<T> => {
+    console.log(select);
     const [storeState, setStoreState] = useState<StoreState>(
       JSON.parse(JSON.stringify(store)),
     );
