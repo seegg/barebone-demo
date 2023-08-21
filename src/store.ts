@@ -21,7 +21,9 @@ export const {
     /** Add 4 to the counter after some delay. */
     addFourAsync: async (setState, state) => {
       if (store.counter.isUpdating) return;
+
       setState({ ...state, isUpdating: true });
+
       let resolve: (value?: unknown) => void;
       const promise = new Promise((res) => {
         resolve = res;
@@ -30,6 +32,7 @@ export const {
         resolve();
       }, 1000);
       await promise;
+
       if (!store.counter.isUpdating) return;
       setState({ ...state, count: store.counter.count + 4, isUpdating: false });
     },

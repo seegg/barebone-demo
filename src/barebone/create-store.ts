@@ -155,14 +155,14 @@ export const createActions = <
 >(
   actions: UserDefinedActions,
   store: Store,
-  storeName: Name,
+  stateName: Name,
   stateListeners: StateListeners<Store>,
   actionType: ActionTypes = ActionTypes.sync,
 ): StoreActions<UserDefinedActions, typeof actionType> => {
   const result = {} as StoreActions<UserDefinedActions, typeof actionType>;
 
   const updateStoreWrapper = (newState: Store[Name]) => {
-    updateStateHelper(newState, store, storeName, stateListeners);
+    updateStateHelper(newState, store, stateName, stateListeners);
   };
 
   /**
@@ -177,9 +177,9 @@ export const createActions = <
      */
     result[key] = (...payload: unknown[]) => {
       if (actionType === ActionTypes.async) {
-        actions[key](updateStoreWrapper, store[storeName], ...payload);
+        actions[key](updateStoreWrapper, store[stateName], ...payload);
       } else {
-        const newStateValue = actions[key](store[storeName], ...payload);
+        const newStateValue = actions[key](store[stateName], ...payload);
         updateStoreWrapper(newStateValue);
       }
     };
@@ -187,14 +187,21 @@ export const createActions = <
   return result;
 };
 
+/**
+ *
+ * @param newState New state of the store
+ * @param store Store to be updated
+ * @param stateName Name of the state.
+ * @param stateListeners
+ */
 const updateStateHelper = <Name extends string>(
   newState: Store[Name],
   store: Store,
-  storeName: Name,
+  stateName: Name,
   stateListeners: StateListeners<Store>,
 ) => {
   const newStore = {
-    [storeName]: newState,
+    [stateName]: newState,
   } as Store;
 
   // Checks to see if the new store state meets
@@ -209,5 +216,5 @@ const updateStateHelper = <Name extends string>(
       listener.setState(newStore);
     }
   });
-  store[storeName] = newState;
+  store[stateName] = newState;
 };

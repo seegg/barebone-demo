@@ -25,12 +25,12 @@ function App() {
         <h4>Barebone React state management demo</h4>
       </div>
       <div className="counter-container">
-        <InnerCounter
+        <Counter
           count={1}
           instruction="Click the button to increment the counters."
           onButtonClick={counterActions.increment}
         />
-        <InnerCounter
+        <AsyncCounter
           count={2}
           instruction="Add 4 to the counter with some delay."
           onButtonClick={asyncCounterActions.addFourAsync}
@@ -57,16 +57,14 @@ interface Counter {
   onButtonClick?: () => void | Promise<void>;
 }
 
-const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
+const Counter = ({ count, instruction, onButtonClick }: Counter) => {
   const counter = useCounterStore((state) => state.counter.count);
   const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
   return (
     <div>
-      <h1 className="card-title">
-        {title} {count && '#' + count}
-      </h1>
+      <Title count={count} title={title} />
       <div className="card">
         <button onClick={onButtonClick}>count is {counter}</button>
         <p>{instruction && instruction}</p>
@@ -79,26 +77,47 @@ const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
   );
 };
 
+const AsyncCounter = ({ count, instruction, onButtonClick }: Counter) => {
+  const counter = useCounterStore((state) => state.counter);
+  const title = useTitleStore((state) => state.Titles.value);
+  const renderCount = useRef(0);
+  renderCount.current++;
+  return (
+    <div>
+      <Title count={count} title={title} />
+      <div className="card">
+        <button onClick={onButtonClick}>count is {counter.count}</button>
+        <p>{instruction && instruction}</p>
+        <p>
+          render: {renderCount.current}{' '}
+          {renderCount.current > 1 ? 'times' : 'time'}.
+        </p>
+        <p>{counter.isUpdating && '[async update]'}</p>
+      </div>
+    </div>
+  );
+};
+
 const TitleController = ({ count, instruction }: Counter) => {
   const counter = useCounterStore(
     (state) => {
       return state.counter.count;
     },
-    (state) => state.counter.count % 3 === 0,
+    (state) => {
+      console.log('checking equality', state);
+      return state.counter.count % 3 === 0 && !state.counter.isUpdating;
+    },
   );
   const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
-
   const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
     titleActions.setTitle(ev.target.value);
   };
 
   return (
     <div>
-      <h1 className="card-title">
-        {title} {count && '#' + count}
-      </h1>
+      <Title count={count} title={title} />
       <div className="card">
         <button onClick={counterActions.increment}>count is {counter}</button>
         <p>{instruction}</p>
@@ -109,6 +128,18 @@ const TitleController = ({ count, instruction }: Counter) => {
         </p>
       </div>
     </div>
+  );
+};
+
+interface ITitle {
+  count?: number;
+  title: string;
+}
+const Title = ({ title, count }: ITitle) => {
+  return (
+    <h2 className="card-title">
+      {title} {count && '#' + count}
+    </h2>
   );
 };
 
