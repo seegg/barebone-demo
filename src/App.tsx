@@ -17,6 +17,7 @@ function App() {
     counterActions.reset();
     titleActions.setTitle('Counter');
   };
+
   return (
     <>
       <div className="reset-button">
@@ -58,7 +59,7 @@ interface Counter {
 
 const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
   const counter = useCounterStore((state) => state.counter);
-  const title = useTitleStore((state) => state.Title.value);
+  const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
   return (
@@ -83,9 +84,9 @@ const TitleController = ({ count, instruction }: Counter) => {
     (state) => {
       return state.counter;
     },
-    (state) => state.counter % 3 === 0 && state.counter > 0,
+    (state) => state.counter % 3 === 0,
   );
-  const title = useTitleStore((state) => state.Title.value);
+  const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
 

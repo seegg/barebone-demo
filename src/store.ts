@@ -19,8 +19,10 @@ export const {
   },
   asyncActions: {
     /** Add 4 to the counter after some delay. */
-    addFourAsync: async (set, state) => {
+    addFourAsync: async (setState, state) => {
+      const oldTitle = titleStore.Titles.value;
       titleActions.setTitle('...');
+
       let resolve: (value?: unknown) => void;
       const promise = new Promise((res) => {
         resolve = res;
@@ -28,20 +30,29 @@ export const {
       setTimeout(() => {
         resolve();
       }, 1000);
+
       await promise;
-      set(state + 4);
-      titleActions.setTitle('counter');
+
+      titleActions.setTitle(oldTitle);
+      setState(state + 4);
     },
   },
 });
+
+asyncCounterActions.addFourAsync;
+counterActions.increment;
 
 const initialState = {
   /** Value of the title. */
   value: 'Counter',
 };
 
-export const { useStore: useTitleStore, actions: titleActions } = createStore({
-  name: 'Title',
+export const {
+  useStore: useTitleStore,
+  actions: titleActions,
+  store: titleStore,
+} = createStore({
+  name: 'Titles',
   initialState,
   /** Some actions */
   actions: {
