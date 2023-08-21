@@ -58,7 +58,7 @@ interface Counter {
 }
 
 const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
-  const counter = useCounterStore((state) => state.counter);
+  const counter = useCounterStore((state) => state.counter.count);
   const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
@@ -82,9 +82,9 @@ const InnerCounter = ({ count, instruction, onButtonClick }: Counter) => {
 const TitleController = ({ count, instruction }: Counter) => {
   const counter = useCounterStore(
     (state) => {
-      return state.counter;
+      return state.counter.count;
     },
-    (state) => state.counter % 3 === 0,
+    (state) => state.counter.count % 3 === 0,
   );
   const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);

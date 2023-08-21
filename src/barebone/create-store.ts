@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type {
   Actions,
   StoreOptions,
-  store,
+  Store,
   StateListeners,
   EqualityFn,
   StoreActions,
@@ -61,20 +61,20 @@ export const createStore = <
   State,
   ActionOption extends Actions<State>,
   AsyncActionOptions extends AsyncActions<State>,
-  SelectFn extends (state: store<Name, State>) => ReturnType<SelectFn>,
+  SelectFn extends (state: Store<Name, State>) => ReturnType<SelectFn>,
 >(
   options: StoreOptions<State, Name, ActionOption, AsyncActionOptions>,
 ): {
   useStore: <StoreSelect extends SelectFn>(
     select: StoreSelect,
-    equalFn?: EqualityFn<store<Name, State>>,
+    equalFn?: EqualityFn<Store<Name, State>>,
   ) => ReturnType<StoreSelect>;
   actions: StoreActions<ActionOption, ActionTypes.sync>;
   asyncActions: StoreActions<AsyncActionOptions, ActionTypes.async>;
-  store: store<Name, State>;
+  store: Store<Name, State>;
 } => {
-  const store = { [options.name]: options.initialState } as store<Name, State>;
-  const stateListeners: StateListeners<store<Name, State>> = new Map();
+  const store = { [options.name]: options.initialState } as Store<Name, State>;
+  const stateListeners: StateListeners<Store<Name, State>> = new Map();
 
   // Construct the hooks that are use to retrieve the
   // state and actions.
@@ -100,7 +100,7 @@ export const createStore = <
  * Create a custom hook that can be used inside functions to
  * retrieve the store state.
  */
-export const createUseStoreHook = <StoreState extends store>(
+export const createUseStoreHook = <StoreState extends Store>(
   store: StoreState,
   stateListeners: StateListeners<StoreState>,
 ): (<SelectFn extends (state: StoreState) => ReturnType<SelectFn>>(
@@ -154,23 +154,15 @@ export const createActions = <
   Name extends string,
 >(
   actions: UserDefinedActions,
-  store: store,
+  store: Store,
   storeName: Name,
-  stateListeners: StateListeners<store>,
+  stateListeners: StateListeners<Store>,
   actionType: ActionTypes = ActionTypes.sync,
 ): StoreActions<UserDefinedActions, typeof actionType> => {
   const result = {} as StoreActions<UserDefinedActions, typeof actionType>;
 
-  /**
-   * Helper function for updating the store with a new state.
-   * @param newStateValue values for updating the store.
-   */
-  const updateStoreHelper = (newState: store[Name]) => {
-    const newStore = {
-      [storeName]: newState,
-    } as store;
-    updateLocalStates(store, newStore, stateListeners);
-    store[storeName] = newState;
+  const updateStoreWrapper = (newState: Store[Name]) => {
+    updateStateHelper(newState, store, storeName, stateListeners);
   };
 
   /**
@@ -185,37 +177,37 @@ export const createActions = <
      */
     result[key] = (...payload: unknown[]) => {
       if (actionType === ActionTypes.async) {
-        actions[key](updateStoreHelper, store[storeName], ...payload);
+        actions[key](updateStoreWrapper, store[storeName], ...payload);
       } else {
         const newStateValue = actions[key](store[storeName], ...payload);
-        updateStoreHelper(newStateValue);
+        updateStoreWrapper(newStateValue);
       }
     };
   }
   return result;
 };
 
-/**
- * Helper for calling the local states when the
- * state on the store changes.
- * @param oldStore current store state.
- * @param newStore new state the store is being updated to.
- * @param stateListeners list of listeners.
- */
-const updateLocalStates = (
-  oldStore: store,
-  newStore: store,
-  stateListeners: StateListeners<store>,
+const updateStateHelper = <Name extends string>(
+  newState: Store[Name],
+  store: Store,
+  storeName: Name,
+  stateListeners: StateListeners<Store>,
 ) => {
+  const newStore = {
+    [storeName]: newState,
+  } as Store;
+
+  // Checks to see if the new store state meets
+  // the update conditions set by the component before
+  // updating the component.
   stateListeners.forEach((listener) => {
-    // Check if new store state meets conditions for
-    // each local state before updating that local state.
     if (listener.equalFn) {
-      if (listener.equalFn(newStore, oldStore)) {
+      if (listener.equalFn(newStore, store)) {
         listener.setState(newStore);
       }
     } else {
       listener.setState(newStore);
     }
   });
+  store[storeName] = newState;
 };

@@ -10,19 +10,18 @@ export const {
   store,
 } = createStore({
   name: 'counter',
-  initialState: 0,
+  initialState: { count: 0, isUpdating: false },
   actions: {
     /** Increment counter. */
-    increment: (state) => state + 1,
+    increment: (state) => ({ ...state, count: state.count + 1 }),
     /** Reset the counter. */
-    reset: () => 0,
+    reset: () => ({ count: 0, isUpdating: false }),
   },
   asyncActions: {
     /** Add 4 to the counter after some delay. */
     addFourAsync: async (setState, state) => {
-      const oldTitle = titleStore.Titles.value;
-      titleActions.setTitle('...');
-
+      if (store.counter.isUpdating) return;
+      setState({ ...state, isUpdating: true });
       let resolve: (value?: unknown) => void;
       const promise = new Promise((res) => {
         resolve = res;
@@ -30,11 +29,9 @@ export const {
       setTimeout(() => {
         resolve();
       }, 1000);
-
       await promise;
-
-      titleActions.setTitle(oldTitle);
-      setState(state + 4);
+      if (!store.counter.isUpdating) return;
+      setState({ ...state, count: store.counter.count + 4, isUpdating: false });
     },
   },
 });
