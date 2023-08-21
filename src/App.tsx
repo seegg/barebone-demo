@@ -104,7 +104,6 @@ const TitleController = ({ count, instruction }: Counter) => {
       return state.counter.count;
     },
     (state) => {
-      console.log('checking equality', state);
       return state.counter.count % 3 === 0 && !state.counter.isUpdating;
     },
   );

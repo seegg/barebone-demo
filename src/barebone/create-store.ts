@@ -72,11 +72,10 @@ export const createStore = <
   asyncActions: StoreActions<AsyncActionOptions, ActionTypes.async>;
   store: Store<Name, State>;
 } => {
+  //
   const store = { [options.name]: options.initialState } as Store<Name, State>;
   const stateListeners: StateListeners<Store<Name, State>> = new Map();
 
-  // Construct the hooks that are use to retrieve the
-  // state and actions.
   const actions = createActions(
     options.actions || ({} as ActionOption),
     store,
@@ -115,10 +114,9 @@ export const createUseStoreHook = <StoreState extends Store>(
    * @param select Function that takes the store state as the argument
    * and can be use to narrow down the value returned.
    *
-   * @param equalFn Function that is called when the store state updates.
-   * The new state and the old state is passed in as arguments. Can be
-   * use to decide whether to trigger local state update and rerender the
-   * component.
+   * @param equalFn Function that is called when the store updates. Use
+   * to decide if the local state should be updated as well. The new state
+   * and the old state are available as the first and second param.
    */
   const useStoreSelect = <T extends (state: StoreState) => ReturnType<T>>(
     select: T,
@@ -127,8 +125,9 @@ export const createUseStoreHook = <StoreState extends Store>(
     const [storeState, setStoreState] = useState<StoreState>(
       JSON.parse(JSON.stringify(store)),
     );
-    // Use the setState function as the listener for store changes
-    // and trigger rerenders.
+
+    // Add the setState function and the equalFn to the store to trigger
+    // updates and rerender the component.
     if (!stateListeners.has(setStoreState)) {
       stateListeners.set(setStoreState, {
         setState: setStoreState,
