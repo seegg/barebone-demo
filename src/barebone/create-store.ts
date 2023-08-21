@@ -47,12 +47,11 @@ import { ActionTypes } from './types';
  *  }
  * );
  *
- * // The state is stored inside a property with a key that
- * // is the same as the name provided during store creation.
- * // Given the store options above, to access the count in the store:
+ * // To access the count inside of a component:
+ *
  * const count = useStore(state => state.counter.count);
  *
- * // Add to the count.
+ * // Add 3 to the count.
  * actions.add(3);
  *
  */
@@ -97,8 +96,11 @@ export const createStore = <
 };
 
 /**
- * Create a custom hook that can be used inside functions to
+ * Creates a custom hook that can be used inside react components to
  * retrieve the store state.
+ *
+ * @param store The store the hooks is accessing.
+ * @param stateListeners Listeners associated with the store.
  */
 export const createUseStoreHook = <StoreState extends Store>(
   store: StoreState,
@@ -144,10 +146,16 @@ export const createUseStoreHook = <StoreState extends Store>(
 };
 
 /**
- * Turns the user functions defined at store creation into actions
- * use to interact with the store state.
+ * Creates actions for interacting with a store.
  *
- * For async actions, isAsync must be set to true.
+ * @param actions The actions defined when creating the store.
+ * @param store The store associated with the actions.
+ * @param stateName the name of the state, defined when creating
+ * the store.
+ * @param stateListeners Listeners listening for updates on
+ * the store.
+ * @param actionType The type of actions, sync or async.
+ * @returns Object containing the actions.
  */
 export const createActions = <
   UserDefinedActions extends Actions,
