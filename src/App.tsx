@@ -18,6 +18,11 @@ function App() {
     titleActions.setTitle('Counter');
   };
 
+  const add4 = async () => {
+    const result = await asyncCounterActions.addFourAsync();
+    console.log(result);
+  };
+
   return (
     <>
       <div className="reset-button">
@@ -33,7 +38,7 @@ function App() {
         <AsyncCounter
           count={2}
           instruction="Add 4 to the counter with some delay."
-          onButtonClick={asyncCounterActions.addFourAsync}
+          onButtonClick={add4}
         />
         <TitleController
           count={3}

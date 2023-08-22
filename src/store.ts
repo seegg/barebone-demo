@@ -18,10 +18,11 @@ export const {
     reset: () => ({ count: 0, isUpdating: false }),
   },
   asyncActions: {
-    /** Add 4 to the counter after some delay. */
+    /** Add 4 to the counter after some delay.*/
     addFourAsync: async (setState, state) => {
       if (store.counter.isUpdating) return;
 
+      // Use the `isUpdating` Prop to track progress.
       setState({ ...state, isUpdating: true });
 
       let resolve: (value?: unknown) => void;
