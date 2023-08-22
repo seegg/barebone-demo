@@ -57,7 +57,10 @@ interface Counter {
 }
 
 const Counter = ({ instruction, onButtonClick }: Counter) => {
-  const counter = useCounterStore((state) => state.counter.count);
+  const counter = useCounterStore(
+    (state) => state.counter.count,
+    (newStore, oldStore) => newStore === oldStore,
+  );
   const renderCount = useRef(0);
   renderCount.current++;
   return (
