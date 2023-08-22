@@ -6,6 +6,8 @@
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
+
+  --card-bg-colour:#2e2a4d;
 }
 
 .logo {
@@ -44,7 +46,9 @@
   border-radius: 5px;
   width: 15em;
   height: 13rem;
-  background-color: darkslateblue;
+  background-color: var(--card-bg-colour);
+  box-shadow: 2px 5px 2px black;
+  animation: shadow-jump 0.25s;
 }
 
 .read-the-docs {
@@ -53,6 +57,7 @@
 
 .reset-button{
   width: auto;
+  margin-bottom: 1rem;
 }
 
 .counter-container{
@@ -65,3 +70,67 @@
 .card-title {
   word-wrap: break-word;
 }
+
+.contact {
+  margin: auto;
+  display: flex;
+  place-content: center;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  width: 3rem;
+  height: 3rem;
+  overflow: hidden;
+}
+
+.contact > a{
+  margin: auto;
+  display: flex;
+  border-radius: 50%;
+  -webkit-box-shadow: 0 0 0.2rem #000;
+          box-shadow: 0 0 0.2rem #000;
+  scale: 1;
+  transition: scale 0.1s ease-in-out;
+}
+
+.contact > a:hover {
+  scale: 1.2;
+  border: 2px solid black;
+  -webkit-box-shadow: 0 0 0.4rem #000;
+          box-shadow: 0 0 0.4rem #000;
+  transition: scale 0.1s ease-in-out;
+}
+
+.contact > a > img {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+@keyframes zoom-in {
+  from {
+    scale: 1;
+    -webkit-box-shadow: 0 0 1px #000;
+            box-shadow: 0 0 1px #000;
+  }
+
+  to {
+    scale: 1.2;
+    -webkit-box-shadow: 0 0 5px #000;
+            box-shadow: 0 0 5px #000;
+  }
+}
+
+@keyframes shadow-jump {
+  from {
+    box-shadow: 2px 5px 2px black;
+  }
+
+  50% {
+    box-shadow: 1px 3px 1px black;
+    scale: 0.995;
+  }
+
+  to {
+    box-shadow: 2px 5px 2px black;
+  }
+}
+

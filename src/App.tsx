@@ -1,13 +1,8 @@
 import { useRef } from 'react';
 import './App.css';
 import githubLogoImg from '/github-32px.png?url';
-import {
-  useCounterStore,
-  counterActions,
-  useTitleStore,
-  titleActions,
-  asyncCounterActions,
-} from './store';
+import Spinner from './assets/spinner.svg';
+import { useCounterStore, counterActions, asyncCounterActions } from './store';
 
 function App() {
   /**
@@ -15,7 +10,6 @@ function App() {
    */
   const handleOnClick = () => {
     counterActions.reset();
-    titleActions.setTitle('Counter');
   };
 
   const add4 = async () => {
@@ -26,8 +20,8 @@ function App() {
   return (
     <>
       <div className="reset-button">
-        <button onClick={handleOnClick}>Reset</button>
         <h4>Barebone React state management demo</h4>
+        <button onClick={handleOnClick}>Reset</button>
       </div>
       <div className="counter-container">
         <Counter
@@ -62,14 +56,12 @@ interface Counter {
   onButtonClick?: () => void | Promise<void>;
 }
 
-const Counter = ({ count, instruction, onButtonClick }: Counter) => {
+const Counter = ({ instruction, onButtonClick }: Counter) => {
   const counter = useCounterStore((state) => state.counter.count);
-  const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
   return (
-    <div>
-      <Title count={count} title={title} />
+    <div key={Math.random()}>
       <div className="card">
         <button onClick={onButtonClick}>count is {counter}</button>
         <p>{instruction && instruction}</p>
@@ -82,14 +74,12 @@ const Counter = ({ count, instruction, onButtonClick }: Counter) => {
   );
 };
 
-const AsyncCounter = ({ count, instruction, onButtonClick }: Counter) => {
+const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
   const counter = useCounterStore((state) => state.counter);
-  const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
   return (
-    <div>
-      <Title count={count} title={title} />
+    <div key={Math.random()}>
       <div className="card">
         <button onClick={onButtonClick}>count is {counter.count}</button>
         <p>{instruction && instruction}</p>
@@ -97,13 +87,13 @@ const AsyncCounter = ({ count, instruction, onButtonClick }: Counter) => {
           render: {renderCount.current}{' '}
           {renderCount.current > 1 ? 'times' : 'time'}.
         </p>
-        <p>{counter.isUpdating && '[async update]'}</p>
+        <p>{counter.isUpdating && <img src={Spinner} height={'40rem'} />}</p>
       </div>
     </div>
   );
 };
 
-const TitleController = ({ count, instruction }: Counter) => {
+const TitleController = ({ instruction }: Counter) => {
   const counter = useCounterStore(
     (state) => {
       return state.counter.count;
@@ -112,38 +102,20 @@ const TitleController = ({ count, instruction }: Counter) => {
       return state.counter.count % 3 === 0 && !state.counter.isUpdating;
     },
   );
-  const title = useTitleStore((state) => state.Titles.value);
   const renderCount = useRef(0);
   renderCount.current++;
-  const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    titleActions.setTitle(ev.target.value);
-  };
 
   return (
-    <div>
-      <Title count={count} title={title} />
+    <div key={Math.random()}>
       <div className="card">
         <button onClick={counterActions.increment}>count is {counter}</button>
         <p>{instruction}</p>
-        <input type="text" value={title} onChange={handleOnChange} />
         <p>
           render: {renderCount.current}{' '}
           {renderCount.current > 1 ? 'times' : 'time'}.
         </p>
       </div>
     </div>
-  );
-};
-
-interface ITitle {
-  count?: number;
-  title: string;
-}
-const Title = ({ title, count }: ITitle) => {
-  return (
-    <h2 className="card-title">
-      {title} {count && '#' + count}
-    </h2>
   );
 };
 
@@ -155,8 +127,10 @@ interface IContact {
 
 const Contact = ({ url, img, alt }: IContact) => {
   return (
-    <a href={url} className="contact">
-      <img src={img} alt={alt} />
-    </a>
+    <div className="contact">
+      <a href={url}>
+        <img src={img} alt={alt} />
+      </a>
+    </div>
   );
 };
