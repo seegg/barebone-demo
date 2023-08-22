@@ -37,7 +37,7 @@ function App() {
         />
         <TitleController
           count={3}
-          instruction="Only update counter for multiples of 3."
+          instruction="Only update the counter for multiples of 3 and not performing any async updates."
         />
       </div>
       <Contact
