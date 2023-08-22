@@ -64,11 +64,8 @@ const Counter = ({ instruction, onButtonClick }: Counter) => {
     <div key={Math.random()}>
       <div className="card">
         <button onClick={onButtonClick}>count is {counter}</button>
+        <RenderCount count={renderCount.current} />
         <p>{instruction && instruction}</p>
-        <p>
-          render: {renderCount.current}{' '}
-          {renderCount.current > 1 ? 'times' : 'time'}.
-        </p>
       </div>
     </div>
   );
@@ -82,11 +79,8 @@ const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
     <div key={Math.random()}>
       <div className="card">
         <button onClick={onButtonClick}>count is {counter.count}</button>
+        <RenderCount count={renderCount.current} />
         <p>{instruction && instruction}</p>
-        <p>
-          render: {renderCount.current}{' '}
-          {renderCount.current > 1 ? 'times' : 'time'}.
-        </p>
         <p>{counter.isUpdating && <img src={Spinner} height={'40rem'} />}</p>
       </div>
     </div>
@@ -109,11 +103,8 @@ const TitleController = ({ instruction }: Counter) => {
     <div key={Math.random()}>
       <div className="card">
         <button onClick={counterActions.increment}>count is {counter}</button>
+        <RenderCount count={renderCount.current} />
         <p>{instruction}</p>
-        <p>
-          render: {renderCount.current}{' '}
-          {renderCount.current > 1 ? 'times' : 'time'}.
-        </p>
       </div>
     </div>
   );
@@ -132,5 +123,13 @@ const Contact = ({ url, img, alt }: IContact) => {
         <img src={img} alt={alt} />
       </a>
     </div>
+  );
+};
+
+const RenderCount = ({ count }: { count: number }) => {
+  return (
+    <p>
+      rendered {count} {count > 1 ? 'times' : 'time'}.
+    </p>
   );
 };
