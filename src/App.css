@@ -105,6 +105,11 @@
   width: 1.5rem;
 }
 
+.card > button {
+  top: -0.8rem;
+  position: relative;
+}
+
 @keyframes zoom-in {
   from {
     scale: 1;
