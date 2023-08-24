@@ -202,7 +202,8 @@ const StoreDisplay = () => {
       </div>
       <div className="stat-item">
         <label htmlFor="store-updating">
-          Update:{counter.isUpdating && <img src={Spinner} height={'17rem'} />}
+          Updating:
+          {counter.isUpdating && <img src={Spinner} height={'17rem'} />}
         </label>
         <input
           type="text"
