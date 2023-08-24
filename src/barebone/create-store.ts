@@ -82,13 +82,14 @@ export const createStore = <
     store,
     options.name,
     stateListeners,
+    ActionTypes.sync,
   );
   const asyncActions = createActions(
     options.asyncActions || ({} as AsyncActionOptions),
     store,
     options.name,
     stateListeners,
-    2,
+    ActionTypes.async,
   );
   const useStore = createUseStoreHook(store, stateListeners);
 
@@ -123,8 +124,8 @@ export const createUseStoreHook = <
     select: T,
     equalFn?: EqualityFn<StoreState>,
   ): ReturnType<T> => {
-    // Serialise a local copy so changes to the main store wont be reflected
-    // when component rerenders unless it's requested.
+    // Serialise a local copy so changes in the main store wont be reflected
+    // locally when component rerenders unless an updated is requested.
     const [storeState, setStoreState] = useState<StoreState>(
       JSON.parse(JSON.stringify(store)),
     );
@@ -136,11 +137,10 @@ export const createUseStoreHook = <
       if (!stateListeners.has(listenerKey)) {
         stateListeners.set(listenerKey, {
           setState: setStoreState,
-          // If not update check callback is provided, compare current state
-          // with new state by default to decide if rerender or not.
           equalFn:
             equalFn ||
-            ((newState, oldState) => select(oldState) !== select(newState)),
+            ((newState, oldState) =>
+              defaultStoreUpdateCheck(select(oldState), select(newState))),
         });
       }
       // Remove the listener from the store when component unmounts.
@@ -156,16 +156,37 @@ export const createUseStoreHook = <
 };
 
 /**
+ * Default logic for checking if local state should be updated
+ * when the store updates.
+ */
+const defaultStoreUpdateCheck = <SelectFnResult>(
+  oldStoreResult: SelectFnResult,
+  newStoreResult: SelectFnResult,
+): boolean => {
+  // When the hook select function returns an array, only one
+  // element needs to be different.
+  if (Array.isArray(oldStoreResult) && Array.isArray(newStoreResult)) {
+    for (let i = 0; i < oldStoreResult.length; i++) {
+      if (oldStoreResult[i] !== newStoreResult[i]) {
+        return true;
+      }
+      return false;
+    }
+  }
+  return oldStoreResult !== newStoreResult;
+};
+
+/**
  * Creates actions for interacting with a store.
  *
- * @param actions The actions defined when creating the store.
+ * @param actions The functions for interacting with the store.
  * @param store The store associated with the actions.
  * @param stateName the name of the state, defined when creating
  * the store.
- * @param stateListeners Listeners listening for updates on
- * the store.
+ * @param stateListeners Listeners from useStore hooks that's
+ * connected to the store.
  * @param actionType The type of actions, sync or async.
- * @returns Object containing the actions.
+ * @returns A set of actions based on the input functions.
  */
 export const createActions = <
   UserDefinedActions extends Actions,
@@ -184,9 +205,8 @@ export const createActions = <
   };
 
   /**
-   * Use for creating async and sync actions. Wraps the actions in a
-   * function where the default params are hidden with only the user
-   * defined payload being exposed.
+   * Use for creating async and sync actions. Hides the default params
+   * with a wrapper function and only expose the user defined params.
    *
    * @param key The property name of the actions.
    */

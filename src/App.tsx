@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import './App.css';
 import githubLogoImg from '/github-32px.png?url';
 import Spinner from './assets/spinner.svg';
@@ -18,9 +18,9 @@ function App() {
   };
 
   return (
-    <>
+    <main>
       <div className="reset-button">
-        <h4>Barebone React state management demo</h4>
+        <h4>Barebone React state management</h4>
         <button onClick={handleOnClick}>Reset</button>
       </div>
       <div className="counter-container">
@@ -44,7 +44,8 @@ function App() {
         img={githubLogoImg}
         alt="github logo linking to repo."
       />
-    </>
+      <StoreDisplay />
+    </main>
   );
 }
 
@@ -57,7 +58,10 @@ interface Counter {
 }
 
 const Counter = ({ instruction, onButtonClick }: Counter) => {
-  const counter = useCounterStore((state) => state.counter.count);
+  const counter = useCounterStore((state) => [
+    state.counter.count,
+    state.counter.isUpdating,
+  ]);
   const renderCount = useRef(0);
   renderCount.current++;
   return (
@@ -131,5 +135,82 @@ const RenderCount = ({ count }: { count: number }) => {
     <p>
       rendered {count} {count > 1 ? 'times' : 'time'}.
     </p>
+  );
+};
+
+const StoreDisplay = () => {
+  const counter = useCounterStore(({ counter }) => counter);
+  const containerElement = useRef<HTMLDivElement>(null);
+
+  const startCoord = useRef({ x: 0, y: 0 });
+  const transformDelta = useRef({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+
+  const handleOnPointerDown = (evt: React.PointerEvent<HTMLDivElement>) => {
+    startCoord.current.x = evt.clientX;
+    startCoord.current.y = evt.clientY;
+    isDragging.current = true;
+  };
+
+  useEffect(() => {
+    const handleOnPointerMove = (evt: PointerEvent) => {
+      if (!isDragging.current) return;
+
+      const deltaX = evt.clientX - startCoord.current.x;
+      const deltaY = evt.clientY - startCoord.current.y;
+      transformDelta.current.x += deltaX;
+      transformDelta.current.y += deltaY;
+
+      requestAnimationFrame(() => {
+        if (containerElement.current) {
+          containerElement.current.style.transform = `translate(${transformDelta.current.x}px, ${transformDelta.current.y}px)`;
+        }
+      });
+
+      startCoord.current.x = evt.clientX;
+      startCoord.current.y = evt.clientY;
+    };
+
+    const handleOnPointerUp = () => {
+      isDragging.current = false;
+    };
+
+    window.addEventListener('pointermove', handleOnPointerMove);
+    window.addEventListener('pointerup', handleOnPointerUp);
+    window.addEventListener('pointercancel', handleOnPointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handleOnPointerMove);
+      window.removeEventListener('pointerup', handleOnPointerUp);
+      window.removeEventListener('pointercancel', handleOnPointerUp);
+    };
+  }, []);
+  return (
+    <div
+      className="stats-card"
+      onContextMenu={(evt) => {
+        evt.preventDefault();
+      }}
+      onPointerDown={handleOnPointerDown}
+      ref={containerElement}
+    >
+      <div className="stat-item">
+        <label htmlFor="store-count" className="store-label">
+          Count:
+        </label>
+        <input type="text" id="store-count" value={counter.count} readOnly />
+      </div>
+      <div className="stat-item">
+        <label htmlFor="store-updating">
+          Update:{counter.isUpdating && <img src={Spinner} height={'17rem'} />}
+        </label>
+        <input
+          type="text"
+          id="store-updating"
+          value={counter.isUpdating ? 'Yes' : 'No'}
+          readOnly
+        />
+      </div>
+    </div>
   );
 };
