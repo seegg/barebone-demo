@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import './App.css';
 import githubLogoImg from '/github-32px.png?url';
+import dragIcon from '/public/dragicon.png?url';
 import Spinner from './assets/spinner.svg';
 import { useCounterStore, counterActions, asyncCounterActions } from './store';
 
@@ -211,6 +212,11 @@ const StoreDisplay = () => {
           readOnly
         />
       </div>
+      <img
+        src={dragIcon}
+        alt="finger drag icon"
+        className="icon-small drag-icon"
+      />
     </div>
   );
 };
