@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import './App.css';
 import githubLogoImg from '/github-32px.png?url';
-import dragIcon from '/public/dragicon.png?url';
+import dragIcon from '/dragicon.png?url';
 import Spinner from './assets/spinner.svg';
 import { useCounterStore, counterActions, asyncCounterActions } from './store';
 
@@ -21,7 +21,6 @@ function App() {
   return (
     <main>
       <div className="reset-button">
-        <h4>Barebone React state management</h4>
         <button onClick={handleOnClick}>Reset</button>
       </div>
       <div className="counter-container">
