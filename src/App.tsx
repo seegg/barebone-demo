@@ -82,7 +82,12 @@ const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
   return (
     <div key={Math.random()}>
       <div className="card">
-        <button onClick={onButtonClick}>count is {counter.count}</button>
+        <button
+          onClick={onButtonClick}
+          className={counter.isUpdating ? 'disabled' : ''}
+        >
+          count is {counter.count}
+        </button>
         <RenderCount count={renderCount.current} />
         <p>{instruction && instruction}</p>
         <p>{counter.isUpdating && <img src={Spinner} height={'40rem'} />}</p>
