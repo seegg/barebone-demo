@@ -23,7 +23,7 @@ export const {
   },
   asyncActions: {
     /** Add some value to the counter after some delay.*/
-    addToCounterAsync: async (state, value: number) => {
+    addToCounterAsync: async (getStore, value: number) => {
       let resolve: (value?: unknown) => void;
       const promise = new Promise((res) => {
         resolve = res;
@@ -32,7 +32,7 @@ export const {
         resolve();
       }, 1000);
       await promise;
-
+      const state = getStore();
       return { ...state, count: state.count + value };
     },
   },

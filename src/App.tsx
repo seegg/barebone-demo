@@ -80,7 +80,6 @@ const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
     store.counter.isUpdating,
   ]);
 
-  console.log('updating', isUpdating);
   const renderCount = useRef(0);
   renderCount.current++;
   return (
@@ -101,16 +100,13 @@ const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
 };
 
 const TitleController = ({ instruction }: Counter) => {
-  const counter = useCounterStore(
+  const count = useCounterStore(
     ({ counter }) => {
       return counter.count;
     },
-    ({ counter }, { counter: oldCounter }) => {
-      return (
-        counter.count % 3 === 0 &&
-        !counter.isUpdating &&
-        oldCounter.count !== counter.count
-      );
+    ({ counter }) => {
+      if (counter.count === 0 && count === 0) return false;
+      return counter.count % 3 === 0 && !counter.isUpdating;
     },
   );
   const renderCount = useRef(0);
@@ -119,7 +115,7 @@ const TitleController = ({ instruction }: Counter) => {
   return (
     <div key={Math.random()}>
       <div className="card">
-        <button onClick={counterActions.increment}>count is {counter}</button>
+        <button onClick={counterActions.increment}>count is {count}</button>
         <RenderCount count={renderCount.current} />
         <p>{instruction}</p>
       </div>
