@@ -16,15 +16,14 @@ export const {
     increment: (state) => ({ ...state, count: state.count + 1 }),
     /** Reset the counter. */
     reset: () => ({ count: 0, isUpdating: false }),
+    setUpdateStatus: (state, status: boolean) => ({
+      ...state,
+      isUpdating: status,
+    }),
   },
   asyncActions: {
-    /** Add 4 to the counter after some delay.*/
-    addFourAsync: async (setState, state) => {
-      if (store.counter.isUpdating) return;
-
-      // Use the `isUpdating` Prop to track progress.
-      setState({ ...state, isUpdating: true });
-
+    /** Add some value to the counter after some delay.*/
+    addToCounterAsync: async (state, value: number) => {
       let resolve: (value?: unknown) => void;
       const promise = new Promise((res) => {
         resolve = res;
@@ -34,14 +33,10 @@ export const {
       }, 1000);
       await promise;
 
-      if (!store.counter.isUpdating) return;
-      setState({ ...state, count: store.counter.count + 4, isUpdating: false });
+      return { ...state, count: state.count + value };
     },
   },
 });
-
-asyncCounterActions.addFourAsync;
-counterActions.increment;
 
 const initialState = {
   /** Value of the title. */

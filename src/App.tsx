@@ -13,9 +13,10 @@ function App() {
     counterActions.reset();
   };
 
-  const add4 = async () => {
-    const result = await asyncCounterActions.addFourAsync();
-    console.log(result);
+  const handleAsyncAdd = async () => {
+    counterActions.setUpdateStatus(true);
+    await asyncCounterActions.addToCounterAsync(4);
+    counterActions.setUpdateStatus(false);
   };
 
   return (
@@ -32,7 +33,7 @@ function App() {
         <AsyncCounter
           count={2}
           instruction="Add 4 to the counter with some delay."
-          onButtonClick={add4}
+          onButtonClick={handleAsyncAdd}
         />
         <TitleController
           count={3}
@@ -58,10 +59,8 @@ interface Counter {
 }
 
 const Counter = ({ instruction, onButtonClick }: Counter) => {
-  const counter = useCounterStore((state) => [
-    state.counter.count,
-    state.counter.isUpdating,
-  ]);
+  const counter = useCounterStore(({ counter }) => counter.count);
+
   const renderCount = useRef(0);
   renderCount.current++;
   return (
@@ -76,7 +75,12 @@ const Counter = ({ instruction, onButtonClick }: Counter) => {
 };
 
 const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
-  const counter = useCounterStore((state) => state.counter);
+  const [count, isUpdating] = useCounterStore((store) => [
+    store.counter.count,
+    store.counter.isUpdating,
+  ]);
+
+  console.log('updating', isUpdating);
   const renderCount = useRef(0);
   renderCount.current++;
   return (
@@ -84,13 +88,13 @@ const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
       <div className="card">
         <button
           onClick={onButtonClick}
-          className={counter.isUpdating ? 'disabled' : ''}
+          className={isUpdating ? 'disabled' : ''}
         >
-          count is {counter.count}
+          count is {count}
         </button>
         <RenderCount count={renderCount.current} />
         <p>{instruction && instruction}</p>
-        <p>{counter.isUpdating && <img src={Spinner} height={'40rem'} />}</p>
+        <p>{isUpdating && <img src={Spinner} height={'40rem'} />}</p>
       </div>
     </div>
   );
@@ -98,11 +102,15 @@ const AsyncCounter = ({ instruction, onButtonClick }: Counter) => {
 
 const TitleController = ({ instruction }: Counter) => {
   const counter = useCounterStore(
-    (state) => {
-      return state.counter.count;
+    ({ counter }) => {
+      return counter.count;
     },
-    (state) => {
-      return state.counter.count % 3 === 0 && !state.counter.isUpdating;
+    ({ counter }, { counter: oldCounter }) => {
+      return (
+        counter.count % 3 === 0 &&
+        !counter.isUpdating &&
+        oldCounter.count !== counter.count
+      );
     },
   );
   const renderCount = useRef(0);
